@@ -1,0 +1,596 @@
+<!doctype html>
+<!--
+Copyright 2014 Eric Wescott - wescotte@gmail.com
+
+This file is part of Quick Subtitles.
+
+Foobar is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version.
+
+Foobar is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Foobar. If
+not, see http://www.gnu.org/licenses/.
+-->
+
+<html>
+<head>
+<title>QuickSubs 0.93</title>
+</head>
+
+<link href="QuickSubs.css" rel="stylesheet" type="text/css">
+<script src="QuickSubs.js"></script>
+
+<body>
+	<div id="instructionsContainer">	
+		<div id="instructionsTop">
+			<button class="instructionsButton" onclick="hideInstructions();">Close Instructions</button>
+			<a href="http://quicksubtitles.sourceforge.net/" target="_blank"><button class="instructionsButton">Visit Home Page</button></a>
+			<h3>If you find this tool useful please consider donating to support future revisions.</h3>	
+			<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
+				<input type="hidden" name="cmd" value="_s-xclick">
+				<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
+				">
+				<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+				<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+			</form>
+			<div>		
+				<script src="http://coinwidget.com/widget/coin.js"></script>
+				<script>
+				CoinWidgetCom.go({
+					wallet_address: "14mmNRgZy1WLYXFZwae75nB8M3Z1yQMtUA"
+					, currency: "bitcoin"
+					, counter: "hide"
+					, alignment: "bl"
+					, qrcode: true
+					, auto_show: false
+					, lbl_button: "Donate"
+					, lbl_address: "My Bitcoin Address:"
+					, lbl_count: "donations"
+					, lbl_amount: "BTC"
+				});
+				</script>
+			</div>						
+		</div>		
+		<div id="instructionsScrolling">
+			<h3>Quick Subtitles takes a data entry philosophy that you should minimize the frequency in which you take your hands off the keyboard.
+				In order to achieve this the majority functionality has been mapped to keyboard. Here is a list of keys to control the program and their behavior. 
+			</h3>		
+			<table id="instructionsTable">
+				<tr> <th class="keyboardInputH"><h1>Key</h1></th> <th class="behaviorH"><h1>Behavior</h1></th> </tr>
+				
+				<tr>
+					<td class="keyboardInputB">
+						<span class="key">F1</span>
+					</td>
+					<td class="behaviorB">
+						<p>	Bring up this help screen</p>
+					</td>
+				</tr>					
+				<tr> 
+					<td class="keyboardInputA">
+						<span class="key">ESCAPE</span>
+					</td> 
+					<td class="behaviorA">
+						<p> Toggle play state: Pause the video if playing and play the video if paused.<br/>
+						</p>
+					</td>
+				</tr>				
+				<tr> 
+					<td class="keyboardInputB">
+						<span class="key">CTRL</span> + <span class="key">ALT</span>
+					</td> 
+					<td class="behaviorB">
+						<p> Toggles Arrow Keys: When ON the arrow keys function as described below regardless of what UI object is active. 
+							When OFF the arrow keys respond how they normally respond for each element of the page if any UI object is active. 
+							For example if you are modifying a subtitle the arrow keys will move the cursor around. 
+						</p>
+					</td>
+				</tr>
+				</tr>
+				<tr> 
+					<td class="keyboardInputA">
+						<span class="key">TAB</span>
+					</td> 
+					<td class="behaviorA">
+						<p> Set an IN POINT based on the video's current frame. If you already have one set then the video seek to this IN POINT.
+							You can also set an IN POINT when you type any text into the subtitle entry box.<br/>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<td class="keyboardInputB">
+						<span class="key">SHIFT</span> + <span class="key">TAB</span>
+					</td> 
+					<td class="behaviorB"> 
+						<p>Clears the current IN POINT.</p>
+					</td>	
+				</tr>
+				<tr>
+					<td class="keyboardInputA">
+						<span class="key">ENTER</span>
+					</td> 
+					<td class="behaviorA"> 
+						<p>Set an OUT POINT based on the video's current frame. If you already have one set then current subtitle will be added to your project.</p>
+					</td>	
+				</tr>
+				<tr>
+					<td class="keyboardInputB">
+						<span class="key">SHIFT</span> + <span class="key">ENTER</span>
+					</td> 
+					<td class="behaviorB"> 
+						<p>Adds a line break to your subtitle</p>
+					</td>	
+				</tr>
+				<tr>
+					<td class="keyboardInputA">
+						<span class="key">CTRL</span> + <span class="key">ENTER</span>
+					</td> 
+					<td class="behaviorA"> 
+						<p>Clears the current OUT POINT.</p>
+					</td>	
+				</tr>		
+				<tr>
+					<td class="keyboardInputB">
+						<span class="key">&#8592;</span>
+					</td> 
+					<td class="behaviorB"> 
+						<p>Move the playhead to the previous IN POINT</p>
+					</td>	
+				</tr>
+				<tr>
+					<td class="keyboardInputA">
+						<span class="key">&#8594;</span>
+					</td> 
+					<td class="behaviorA"> 
+						<p>Move the playhead to the next IN POINT</p>
+					</td>	
+				</tr>	
+				<tr>
+					<td class="keyboardInputB">
+						<span class="key">&#8595;</span>
+					</td> 
+					<td class="behaviorB"> 
+						<p>Adjusts the IN POINT of the nearest subtitle based on the current frame of the video. There are two cases on how this works<br/><br/>
+							<b>CASE 1:</b> If the current video frame is between an IN and OUT POINT then the IN POINT will be adjusted to the later position<br/>						
+							<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+								viewBox="0 0 950 197" enable-background="new 0 0 950 197" xml:space="preserve">
+								<symbol  id="Arrow_28" viewBox="-22.86 -15.876 45.72 31.752">
+									<polygon fill="none" points="-22.86,-15.876 22.86,-15.876 22.86,15.875 -22.86,15.875 	"/>
+									<g>
+										<polygon points="-22.86,4.762 4.632,4.762 -6.481,15.875 6.983,15.875 22.86,-0.002 6.983,-15.876 -6.481,-15.876 4.632,-4.762 
+											-22.86,-4.762 		"/>
+									</g>
+								</symbol>
+								<symbol  id="Arrow_4" viewBox="-22.86 -7.668 45.72 15.336">
+									<g>
+										<g>
+											<polygon fill="#0072BC" points="-5.744,-1.585 -5.744,-7.668 22.86,-0.007 -5.744,7.668 -5.744,1.585 -22.86,1.585 
+												-22.86,-1.585 			"/>
+										</g>
+									</g>
+								</symbol>
+								<g id="Inside">
+									<rect id="Timeline_3_" x="528" y="96.117" fill="#D7DADD" stroke="#000000" stroke-miterlimit="10" width="412" height="46"/>
+									<rect id="_x31_-In_Point_3_" x="597" y="40.117" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<rect id="_x31_-Out_Point_3_" x="667" y="40.117" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<text id="_x31_-In_TEXT_3_" transform="matrix(1 0 0 1 581.6689 17.1172)"><tspan x="0" y="0" font-family="'Arial-Black'" font-size="12">NEW</tspan><tspan x="-15" y="14.4" font-family="'Arial-Black'" font-size="12">IN POINT</tspan></text>
+									<text id="_x31_-Out_Text_3_" transform="matrix(1 0 0 1 642 30.1172)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+									<rect id="_x32_-In_Point_3_" x="787" y="40.117" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<rect id="_x32_-Out_Point_3_" x="905" y="40.117" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<text id="_x32_-In_Text_3_" transform="matrix(1 0 0 1 762 30.1172)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+									<text id="_x32_-Out_Text_3_" transform="matrix(1 0 0 1 870 30.1172)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+									<text transform="matrix(1 0 0 1 642 137.6172)" display="none" font-family="'Arial-Black'" font-size="24">Video Timeline</text>
+									<text transform="matrix(1 0 0 1 566 0.6172)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 1</text>
+									<text transform="matrix(1 0 0 1 800 0.6172)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 2</text>
+									<rect id="Video_Playhead_3_" x="597" y="119.117" stroke="#000000" stroke-miterlimit="10" width="6" height="42"/>
+									<text transform="matrix(1 0 0 1 528 183.1172)" font-family="'Arial-Black'" font-size="18">Current Frame</text>
+
+										<use xlink:href="#Arrow_28"  width="45.72" height="31.752" x="-22.86" y="-15.876" transform="matrix(1.7248 0 0 -1.7248 476.5693 119.1162)" display="none" overflow="visible"/>
+									<rect id="_x31_-In_Point_1_" x="552" y="40.117" fill="none" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+
+										<use xlink:href="#Arrow_4"  width="45.72" height="15.336" x="-22.86" y="-7.668" transform="matrix(0.8906 0 0 -0.8906 571.9995 75.7051)" overflow="visible"/>
+								</g>
+								<g id="Initial">
+									<rect id="Timeline_1_" x="10" y="96.117" fill="#D7DADD" stroke="#000000" stroke-miterlimit="10" width="412" height="46"/>
+									<rect id="_x31_-In_Point_2_" x="37" y="40.117" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<rect id="_x31_-Out_Point_1_" x="149" y="40.117" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<text id="_x31_-In_TEXT_1_" transform="matrix(1 0 0 1 22 30.1172)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+									<text id="_x31_-Out_Text_1_" transform="matrix(1 0 0 1 124 30.1172)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+									<rect id="_x32_-In_Point_1_" x="269" y="40.117" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<rect id="_x32_-Out_Point_1_" x="387" y="40.117" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<text id="_x32_-In_Text_1_" transform="matrix(1 0 0 1 244 30.1172)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+									<text id="_x32_-Out_Text_1_" transform="matrix(1 0 0 1 352 30.1172)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+									<text transform="matrix(1 0 0 1 124 137.6172)" display="none" font-family="'Arial-Black'" font-size="24">Video Timeline</text>
+									<text transform="matrix(1 0 0 1 48 0.6172)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 1</text>
+									<text transform="matrix(1 0 0 1 282 0.6172)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 2</text>
+									<rect id="Video_Playhead_1_" x="79" y="119.117" stroke="#000000" stroke-miterlimit="10" width="6" height="42"/>
+									<text transform="matrix(1 0 0 1 15 183.1172)" font-family="'Arial-Black'" font-size="18">Current Frame</text>
+
+										<use xlink:href="#Arrow_28"  width="45.72" height="31.752" x="-22.86" y="-15.876" transform="matrix(1.0686 0 0 -1.0686 474.9995 119.1172)" overflow="visible"/>
+								</g>
+							</svg>						
+							<br/>
+							<b>CASE 2:</b> If the current video frame is between an OUT and IN POINT then the IN POINT will be adjusted to the earlier position<br/>	
+							<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+								 viewBox="0 0 950 196" enable-background="new 0 0 950 196" xml:space="preserve">
+								<symbol  id="Arrow_28" viewBox="-22.86 -15.876 45.72 31.752">
+									<polygon fill="none" points="-22.86,-15.876 22.86,-15.876 22.86,15.875 -22.86,15.875 	"/>
+									<g>
+										<polygon points="-22.86,4.762 4.632,4.762 -6.481,15.875 6.983,15.875 22.86,-0.002 6.983,-15.876 -6.481,-15.876 4.632,-4.762 
+											-22.86,-4.762 		"/>
+									</g>
+								</symbol>
+								<symbol  id="Arrow_4" viewBox="-22.86 -7.668 45.72 15.336">
+									<g>
+										<g>
+											<polygon fill="#0072BC" points="-5.744,-1.585 -5.744,-7.668 22.86,-0.007 -5.744,7.668 -5.744,1.585 -22.86,1.585 
+												-22.86,-1.585 			"/>
+										</g>
+									</g>
+								</symbol>
+								<g id="Initial">
+									<rect id="Timeline" x="10" y="95" fill="#D7DADD" stroke="#000000" stroke-miterlimit="10" width="412" height="46"/>
+									<rect id="_x31_-In_Point" x="37" y="39" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<rect id="_x31_-Out_Point" x="149" y="39" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<text id="_x31_-In_TEXT" transform="matrix(1 0 0 1 22 29)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+									<text id="_x31_-Out_Text" transform="matrix(1 0 0 1 124 29)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+									<rect id="_x32_-In_Point" x="269" y="39" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<rect id="_x32_-Out_Point" x="387" y="39" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<text id="_x32_-In_Text" transform="matrix(1 0 0 1 244 29)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+									<text id="_x32_-Out_Text" transform="matrix(1 0 0 1 352 29)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+									<text transform="matrix(1 0 0 1 127.5 148)" display="none" font-family="'Arial-Black'" font-size="24">Video Timeline</text>
+									<text transform="matrix(1 0 0 1 48 20)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 1</text>
+									<text transform="matrix(1 0 0 1 282 20)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 2</text>
+									<rect id="Video_Playhead" x="234" y="118" stroke="#000000" stroke-miterlimit="10" width="6" height="42"/>
+									<text transform="matrix(1 0 0 1 161 182.1162)" font-family="'Arial-Black'" font-size="18">Current Frame</text>
+	
+										<use xlink:href="#Arrow_28"  width="45.72" height="31.752" x="-22.86" y="-15.876" transform="matrix(1.0686 0 0 -1.0686 473.9995 117.9995)" overflow="visible"/>
+								</g>
+								<g id="Update">
+									<rect id="Timeline_1_" x="528" y="95.116" fill="#D7DADD" stroke="#000000" stroke-miterlimit="10" width="412" height="46"/>
+									<rect id="_x31_-In_Point_1_" x="555" y="39.116" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<rect id="_x31_-Out_Point_1_" x="667" y="39.116" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<text id="_x31_-In_TEXT_1_" transform="matrix(1 0 0 1 540 29.1162)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+									<text id="_x31_-Out_Text_1_" transform="matrix(1 0 0 1 642 29.1162)" display="none" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+									<rect id="_x32_-In_Point_1_" x="752" y="39.116" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<rect id="_x32_-Out_Point_1_" x="905" y="39.116" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+									<text id="_x32_-In_Text_1_" transform="matrix(1 0 0 1 739.6689 15)"><tspan x="0" y="0" font-family="'Arial-Black'" font-size="12">NEW</tspan><tspan x="-15" y="14.4" font-family="'Arial-Black'" font-size="12">IN POINT</tspan></text>
+									<text id="_x32_-Out_Text_1_" transform="matrix(1 0 0 1 870 29.1162)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+									<text transform="matrix(1 0 0 1 645.5 148.1162)" display="none" font-family="'Arial-Black'" font-size="24">Video Timeline</text>
+									<text transform="matrix(1 0 0 1 566 20.1162)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 1</text>
+									<text transform="matrix(1 0 0 1 786 20.1162)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 2</text>
+									<rect id="Video_Playhead_1_" x="752" y="118.116" stroke="#000000" stroke-miterlimit="10" width="6" height="42"/>
+									<text transform="matrix(1 0 0 1 680 182.1162)" font-family="'Arial-Black'" font-size="18">Current Frame</text>
+									<rect id="_x32_-In_Point_2_" x="805" y="39" fill="none" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+	
+										<use xlink:href="#Arrow_4"  width="45.72" height="15.336" x="-22.86" y="-7.668" transform="matrix(-1.1312 0 0 1.1312 785.1396 71)" overflow="visible"/>
+								</g>
+							</svg>							
+						</p>
+					</td>	
+				</tr>			
+				<tr>
+					<td class="keyboardInputA">
+						<span class="key">&#8593;</span>
+					</td> 
+					<td class="behaviorA"> 
+						<p>Adjusts the OUT POINT of the nearest subtitle based on the current frame of the video. There are two cases on how this works<br/><br/>
+							<b>CASE 1:</b> If the current video frame is between an IN and OUT POINT then the OUT POINT will be adjusted to the earlier position<br/>
+							<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" 
+								 viewBox="0 0 950 197" enable-background="new 0 0 950 197" xml:space="preserve">
+							<symbol  id="Arrow_28" viewBox="-22.86 -15.876 45.72 31.752">
+								<polygon fill="none" points="-22.86,-15.876 22.86,-15.876 22.86,15.875 -22.86,15.875 	"/>
+								<g>
+									<polygon points="-22.86,4.762 4.632,4.762 -6.481,15.875 6.983,15.875 22.86,-0.002 6.983,-15.876 -6.481,-15.876 4.632,-4.762 
+										-22.86,-4.762 		"/>
+								</g>
+							</symbol>
+							<symbol  id="Arrow_4" viewBox="-22.86 -7.668 45.72 15.336">
+								<g>
+									<g>
+										<polygon fill="#0072BC" points="-5.744,-1.585 -5.744,-7.668 22.86,-0.007 -5.744,7.668 -5.744,1.585 -22.86,1.585 
+											-22.86,-1.585 			"/>
+									</g>
+								</g>
+							</symbol>
+							<g id="Inside">
+								<rect id="Timeline_3_" x="528" y="96.117" fill="#D7DADD" stroke="#000000" stroke-miterlimit="10" width="412" height="46"/>
+								<rect id="_x31_-In_Point_3_" x="629" y="40.117" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<rect id="_x31_-Out_Point_3_" x="667" y="40.117" fill="none" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<text id="_x31_-In_TEXT_3_" transform="matrix(1 0 0 1 613.6689 17.1172)"><tspan x="0" y="0" font-family="'Arial-Black'" font-size="12">NEW</tspan><tspan x="-21.996" y="14.4" font-family="'Arial-Black'" font-size="12">OUT POINT</tspan></text>
+								<text id="_x31_-Out_Text_3_" transform="matrix(1 0 0 1 520.4287 30.1172)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+								<rect id="_x32_-In_Point_3_" x="787" y="40.117" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<rect id="_x32_-Out_Point_3_" x="905" y="40.117" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<text id="_x32_-In_Text_3_" transform="matrix(1 0 0 1 762 30.1172)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+								<text id="_x32_-Out_Text_3_" transform="matrix(1 0 0 1 870 30.1172)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+								<text transform="matrix(1 0 0 1 642 137.6172)" display="none" font-family="'Arial-Black'" font-size="24">Video Timeline</text>
+								<text transform="matrix(1 0 0 1 566 0.6172)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 1</text>
+								<text transform="matrix(1 0 0 1 800 0.6172)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 2</text>
+								<rect id="Video_Playhead_3_" x="629" y="119.117" stroke="#000000" stroke-miterlimit="10" width="6" height="42"/>
+								<text transform="matrix(1 0 0 1 558 183.1172)" font-family="'Arial-Black'" font-size="18">Current Frame</text>
+	
+									<use xlink:href="#Arrow_28"  width="45.72" height="31.752" x="-22.86" y="-15.876" transform="matrix(1.7248 0 0 -1.7248 476.5693 119.1162)" display="none" overflow="visible"/>
+								<rect id="_x31_-In_Point_1_" x="552" y="40.117" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+	
+									<use xlink:href="#Arrow_4"  width="45.72" height="15.336" x="-22.86" y="-7.668" transform="matrix(-0.8311 0 0 0.8906 654.0005 69.2881)" overflow="visible"/>
+							</g>
+							<g id="Initial">
+								<rect id="Timeline_1_" x="10" y="96.117" fill="#D7DADD" stroke="#000000" stroke-miterlimit="10" width="412" height="46"/>
+								<rect id="_x31_-In_Point_2_" x="37" y="40.117" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<rect id="_x31_-Out_Point_1_" x="149" y="40.117" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<text id="_x31_-In_TEXT_1_" transform="matrix(1 0 0 1 22 30.1172)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+								<text id="_x31_-Out_Text_1_" transform="matrix(1 0 0 1 124 30.1172)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+								<rect id="_x32_-In_Point_1_" x="269" y="40.117" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<rect id="_x32_-Out_Point_1_" x="387" y="40.117" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<text id="_x32_-In_Text_1_" transform="matrix(1 0 0 1 244 30.1172)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+								<text id="_x32_-Out_Text_1_" transform="matrix(1 0 0 1 352 30.1172)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+								<text transform="matrix(1 0 0 1 124 137.6172)" display="none" font-family="'Arial-Black'" font-size="24">Video Timeline</text>
+								<text transform="matrix(1 0 0 1 48 0.6172)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 1</text>
+								<text transform="matrix(1 0 0 1 282 0.6172)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 2</text>
+								<rect id="Video_Playhead_1_" x="110" y="121.117" stroke="#000000" stroke-miterlimit="10" width="6" height="42"/>
+								<text transform="matrix(1 0 0 1 43 183.1172)" font-family="'Arial-Black'" font-size="18">Current Frame</text>
+	
+									<use xlink:href="#Arrow_28"  width="45.72" height="31.752" x="-22.86" y="-15.876" transform="matrix(1.0686 0 0 -1.0686 474.9995 119.1172)" overflow="visible"/>
+							</g>
+							</svg>
+							<br/>
+							<b>CASE 2:</b> If the current video frame is between an OUT and IN POINT then the OUT POINT will be adjusted to the later position<br/>
+							<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+								 viewBox="0 0 950 196" enable-background="new 0 0 950 196" xml:space="preserve">
+							<symbol  id="Arrow_28" viewBox="-22.86 -15.876 45.72 31.752">
+								<polygon fill="none" points="-22.86,-15.876 22.86,-15.876 22.86,15.875 -22.86,15.875 	"/>
+								<g>
+									<polygon points="-22.86,4.762 4.632,4.762 -6.481,15.875 6.983,15.875 22.86,-0.002 6.983,-15.876 -6.481,-15.876 4.632,-4.762 
+										-22.86,-4.762 		"/>
+								</g>
+							</symbol>
+							<symbol  id="Arrow_4" viewBox="-22.86 -7.668 45.72 15.336">
+								<g>
+									<g>
+										<polygon fill="#0072BC" points="-5.744,-1.585 -5.744,-7.668 22.86,-0.007 -5.744,7.668 -5.744,1.585 -22.86,1.585 
+											-22.86,-1.585 			"/>
+									</g>
+								</g>
+							</symbol>
+							<g id="Initial">
+								<rect id="Timeline" x="10" y="95" fill="#D7DADD" stroke="#000000" stroke-miterlimit="10" width="412" height="46"/>
+								<rect id="_x31_-In_Point" x="37" y="39" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<rect id="_x31_-Out_Point" x="149" y="39" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<text id="_x31_-In_TEXT" transform="matrix(1 0 0 1 22 29)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+								<text id="_x31_-Out_Text" transform="matrix(1 0 0 1 124 29)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+								<rect id="_x32_-In_Point" x="269" y="39" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<rect id="_x32_-Out_Point" x="387" y="39" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<text id="_x32_-In_Text" transform="matrix(1 0 0 1 244 29)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+								<text id="_x32_-Out_Text" transform="matrix(1 0 0 1 352 29)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+								<text transform="matrix(1 0 0 1 127.5 148)" display="none" font-family="'Arial-Black'" font-size="24">Video Timeline</text>
+								<text transform="matrix(1 0 0 1 48 20)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 1</text>
+								<text transform="matrix(1 0 0 1 282 20)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 2</text>
+								<rect id="Video_Playhead" x="190" y="118" stroke="#000000" stroke-miterlimit="10" width="6" height="42"/>
+								<text transform="matrix(1 0 0 1 117 182.1162)" font-family="'Arial-Black'" font-size="18">Current Frame</text>
+	
+									<use xlink:href="#Arrow_28"  width="45.72" height="31.752" x="-22.86" y="-15.876" transform="matrix(1.0686 0 0 -1.0686 473.9995 117.9995)" overflow="visible"/>
+							</g>
+							<g id="Update">
+								<rect id="Timeline_1_" x="528" y="95.116" fill="#D7DADD" stroke="#000000" stroke-miterlimit="10" width="412" height="46"/>
+								<rect id="_x31_-In_Point_1_" x="555" y="39.116" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<rect id="_x31_-Out_Point_1_" x="667" y="39.116" fill="none" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<text id="_x31_-In_TEXT_1_" transform="matrix(1 0 0 1 540 29.1162)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+								<text id="_x31_-Out_Text_1_" transform="matrix(1 0 0 1 642 29.1162)" display="none" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+								<rect id="_x32_-In_Point_1_" x="708" y="39" fill="#ED1C24" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<rect id="_x32_-Out_Point_1_" x="905" y="39.116" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+								<text id="_x32_-In_Text_1_" transform="matrix(1 0 0 1 698.6689 15)"><tspan x="0" y="0" font-family="'Arial-Black'" font-size="12">NEW</tspan><tspan x="-21.996" y="14.4" font-family="'Arial-Black'" font-size="12">OUT POINT</tspan></text>
+								<text id="_x32_-Out_Text_1_" transform="matrix(1 0 0 1 870 29.1162)" font-family="'Arial-Black'" font-size="12">OUT POINT</text>
+								<text transform="matrix(1 0 0 1 645.5 148.1162)" display="none" font-family="'Arial-Black'" font-size="24">Video Timeline</text>
+								<text transform="matrix(1 0 0 1 566 20.1162)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 1</text>
+								<text transform="matrix(1 0 0 1 786 20.1162)" display="none" font-family="'Arial-Black'" font-size="18">Subtitle 2</text>
+								<rect id="Video_Playhead_2_" x="708" y="118.116" stroke="#000000" stroke-miterlimit="10" width="6" height="42"/>
+								<text transform="matrix(1 0 0 1 636 182.1162)" font-family="'Arial-Black'" font-size="18">Current Frame</text>
+								<rect id="_x32_-In_Point_2_" x="805" y="39" fill="#00A651" stroke="#000000" stroke-miterlimit="10" width="6" height="72"/>
+	
+									<use xlink:href="#Arrow_4"  width="45.72" height="15.336" x="-22.86" y="-7.668" transform="matrix(0.9624 0 0 -0.9624 689 75)" overflow="visible"/>
+								<text id="_x31_-In_TEXT_2_" transform="matrix(1 0 0 1 773 29)" font-family="'Arial-Black'" font-size="12">IN POINT</text>
+							</g>
+							</svg>				
+						</p>
+					</td>	
+				</tr>
+				<tr>
+					<td class="keyboardInputB">
+						<span class="key">SHIFT</span> + <span class="key">&#8595;</span>
+					</td>
+					<td class="behaviorB">
+						<p>	Same behavior as <span class="key">&#8595;</span> but when two consecutive subtitles share a common timecode (ie subtitle 1's OUT 
+							point has the same timecode as subtitle 2's IN point) only the IN point is adjusted.
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<td class="keyboardInputA">
+						<span class="key">SHIFT</span> + <span class="key">&#8593;</span>
+					</td>
+					<td class="behaviorA">
+						<p>	Same behavior as <span class="key">&#8593;</span> but when two consecutive subtitles share a common timecode (ie subtitle 1's OUT 
+							point has the same timecode as subtitle 2's IN point) only the OUT point is adjusted.
+						</p>
+					</td>
+				</tr>										
+				<tr>
+					<td class="keyboardInputB">
+						<input type="checkbox" checked="checked"/>
+					</td>
+					<td class="behaviorB">
+						<p>	You can manipulate multiple subtitles at once by using the checkboxes next to them. If you click any checkbox and then 
+						hold down the<span class="key">Shift</span> key and click another checkbox it will selet or deselect that range of checkboxes. You can also toggle selecting all the boxes
+						by clicking the top most box in the header.
+						</p>
+					</td>
+				</tr>	
+				<tr>
+					<td class="keyboardInputA">
+						<input type="range" min="-1.5" max="1.5" step="0.025" value="0"/>
+					</td>
+					<td class="behaviorA">
+						<p>	Adjust the IN and OUT points of a subtitle in 0.025 second increments up to 1.5 seconds in either direction.<br/>
+							Hold down <span class="key">SHIFT</span> to adjust only the IN point and <span class="key">ALT</span> to adjust only the OUT point.
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<td class="keyboardInputB">
+						<button>Slip Sub</button>
+					</td>
+					<td class="behaviorB">
+						<p>	Splits the subtitle into two subtitles each half the length of the original
+						</p>
+					</td>
+				</tr>																
+			</table>		
+		</div>
+	</div>		
+
+	<div id="container">
+		<div id="top">
+			<div id="leftSide">
+				<canvas id="waveformPreview"></canvas>			
+				<video id="video" controls=""></video>
+				<p id="overlaySubtitle"></p>
+				<div id="upperControls">
+					<fieldset class="controlWrapper">
+						<legend>Instructions</legend>
+							<button onclick="showInstructions();">Get Help</button>
+					</fieldset>		
+
+					<fieldset class="controlWrapper controlWrapperShrink">
+						<legend>Load Video</legend>
+						<input type="file" class="custom-file-input" id="loadVideo" accept="video/*"/>
+						<button onclick="document.getElementById('loadVideo').click();"/>Choose File</button>				
+					</fieldset>
+					<fieldset class="controlWrapper controlWrapperShrink">
+						<legend>Load Subtitles</legend>
+						<input type="file" class="custom-file-input" id="loadSubtitles" accept=".srt"/>
+						<button onclick="document.getElementById('loadSubtitles').click();"/>Choose File</button>												
+					</fieldset>
+					<fieldset class="controlWrapper">
+						<legend>Arrow Keys</legend>
+						<div>
+							<button id="toggleArrows" onclick="toggleArrows();">OFF</button>
+						</div>
+					</fieldset>	
+																	
+					<fieldset class="controlWrapper controlWrapperShrink">
+						<legend>SRT Formart</legend>
+						<span id="currentTimecode">00:00:00,000</span>
+					</fieldset>	
+		
+					<fieldset class="controlWrapper controlWrapperShrink">
+						<legend>Seconds</legend>
+						<span id="currentTimecodeNative">0.0</span>
+					</fieldset>
+				
+				</div>												
+			</div>
+			<div id="rightSide">
+				<div id="headers">
+					<table>
+						<tbody>
+							<tr>
+								<th class="checkbox"> <input type="checkbox" onclick="selectAll(this)"/> </th>
+								<th class="timecode"> In Point </th>
+								<th class="timecode"> Out Point </th>
+								<th class="subtitle"> Subtitle Text </th>
+							</tr>
+						</tbody>
+					</table> 			
+				</div>
+				<div id="scrollingSection">
+					<table>
+						<tbody id="subtitles">
+						</tbody>
+					</table> 			
+				</div>				
+		
+			</div>
+		</div>
+
+		<div id="bottom">
+			<div class="bottomColumn">		
+				<fieldset class="controlGroup controlGroupStatus">
+					<legend>Status Messages</legend>
+					<div id="statusMessage"></div>					
+				</fieldset>
+																
+				<div id="currentInput">
+			 		<fieldset class="controlGroup">
+					<legend>Enter Subtitles Here</legend>			
+						<table>
+							<tbody> 
+								<tr>
+									<th class="checkbox"> &nbsp; </th>
+									<th class="timecode"> In Point </th>
+									<th class="timecode"> Out Point </th>
+									<th class="subtitle"> Subtitle Text </th>
+								</tr>
+								<tr id="ROW0">
+									<td class="checkbox"> </td>
+									<td class="timecode"> <input type="text" class="timecodeInput" id="IN0"/> </td>
+									<td class="timecode"> <input type="text" class="timecodeInput" id="OUT0"/></td>
+									<td class="subtitle"> <textarea class="subtitleInput" id="SUB0"></textarea> </td>
+								</tr>
+							</tbody>
+						</table>
+						<input id="SHIFT0" type="range" min="-1.5" max="1.5" step="0.025" value="0"/>
+					</fieldset>
+				</div>						
+			</div>
+				
+			<div class="bottomColumn">
+				<fieldset class="controlGroup">
+					Font Color:
+					<input type="color" id="fontColor" onchange="document.getElementById('overlaySubtitle').style.color=this.value";>
+					Background Color: 
+					<input type="color" id="bgColor" onchange="document.getElementById('overlaySubtitle').style.backgroundColor=this.value";>
+					Font Size:
+					<input type="text" id="fontSize" class="timecodeInput" onchange="updateFontSize(this.value);">
+					Opacity:
+					<input type="text" id="fontOpacity" class="timecodeInput" onchange="updateFontOpacity(this.value);">
+				</fieldset>	
+							
+				<fieldset class="controlWrapper">
+					<legend>Playback Speed</legend>
+					50%
+					<input type="range" id="playRate" min="-5" max="5" value="0" step="1" onchange="changePlayRate(this.value);"/> 150%
+				</fieldset>	
+									
+				<fieldset class="controlWrapper">
+					<legend>Save Project</legend>
+					<button id="saveSubtitles" onclick="saveSRTFile();">Save Subtitles</button>
+					<button id="exportSubtitles" onclick="exportSTL();">Export STL File</button>
+				</fieldset>
+				<fieldset class="controlWrapper">
+					<legend>Delete Selected Subs</legend>
+					<button id="deleteSubs" onclick="deleteSubs();"/>Delete Subtitles</button>
+				</fieldset>
+								
+				<fieldset class="controlWrapper">
+					<legend>Adjustments (In Seconds) To Selected</legend>
+					<input type="Button" value="Apply Offset To:" onclick="offsetSubs();"/>
+					<select id="offsetType">
+						<option value="IN">In Points</option>
+						<option value="OUT">Out Points</option>
+						<option value="BOTH">Both</option>
+					</select>
+					<input type="text" class="timecodeInput" id="offsetAmount" value="0.0"/>
+				</fieldset>	
+			</div>	
+								
+		</div>
+					
+	</div>
+</body>
+
+<script> init();</script>
+</html>

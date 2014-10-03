@@ -1,0 +1,351 @@
+/* 
+Copyright 2014 Eric Wescott - wescotte@gmail.com
+
+This file is part of Quick Subtitles.
+
+Foobar is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version.
+
+Foobar is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Foobar. If
+not, see http://www.gnu.org/licenses/.
+*/
+
+body {
+	background-color: rgb(25,0,0);
+	overflow-y: hidden;	
+	height: 100%;	
+}
+
+#instructionsContainer {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0,0,0, .85);
+	display: none;	
+		
+	z-index: 3;
+}
+
+#instructionsTop {
+	position: absolute;
+	top: 0;
+	left: calc((100% - 930px)/2);
+	width: 900px;
+	height: 115px;
+	background-color: rgb(128,128,128);
+	border: 15px solid rgb(100, 100, 100);
+	z-index: 3;		
+}
+
+#instructionsTop > h3 {
+	position: absolute;
+	top: 10px;
+	margin: 0;
+	left: 250px;
+	text-align: center;
+}
+
+#instructionsTop > form {
+	position: absolute;
+	top: 45px;
+	left: 375px;
+}
+
+#instructionsTop > div {
+	position: absolute;
+	top: 45px;
+	left: 65%;
+}
+
+#instructionsScrolling {
+	position: absolute;
+	top: 115px;
+	left: calc((100% - 930px)/2);
+		
+	width: 900px;
+	height: calc(100% - 150px);
+	background-color: rgb(175,175,175);
+	border: 15px solid rgb(100, 100, 100);
+	overflow-y: auto;	
+	z-index: 3;
+}
+
+#instructionsScrolling > h3 {
+	padding: 0 6%;
+}
+
+#container {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 1300px;
+	height: 650px;
+	margin: -325px 0 0 -650px;
+	z-index: 1;		
+}
+
+#top {
+	position: absolute;
+	width: 100%;
+	height: 450px;
+}
+
+#waveformPreview {
+	position: absolute;
+	top: 5px;
+	left: 10px;
+	width: 700px;
+	height: 110px;
+	background-color: rgb(100,100,100);
+	margin: 0;
+	padding: 0;
+	cursor: ew-resize;
+}
+
+#leftSide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 720px;
+    height: 100%;
+	background-color: rgb(175,175,175);
+}
+
+#video {
+	position: absolute;
+/*	top: 145px;*/
+	bottom: 0px;
+	left: 10px;
+	width: 525px;
+	height: 350px;
+}
+
+video::-webkit-media-controls-fullscreen-button {
+    display: none;
+}
+
+#overlaySubtitle {
+	position: absolute;
+    left: 64px;
+    bottom: 40px;
+    color: yellow;
+    font-size: 1em;
+	text-align: center;
+	width: 420px;
+	background-color: black;
+	opacity: .85;
+}
+
+#upperControls {
+	position: absolute;
+	left: 535px;
+	top: 120px;
+	width: 175px;
+	height: 325px;
+
+}
+
+#upperControls fieldSet {
+	margin-bottom: 5px;
+	margin-left: 15px;
+}
+
+#rightSide {
+    position: absolute;
+	margin-left: 730px;
+	width: calc(1300px - 730px);
+	height: 100%;
+	background-color: rgb(175,175,175);
+}
+
+#bottom {
+	position: absolute;
+	height: 200px;	
+	top: 460px;
+	width: 100%; 
+	background-color: rgb(175,175,175);
+}
+
+#headers {
+	background-color: rgb(100,100,100);
+	height: 25px;
+}
+
+#scrollingSection {
+	overflow-y: scroll;
+	background-color: rgb(175,175,175);
+	width: 100%;
+	height: 425px;
+}
+
+.bottomColumn {
+	float: left;
+	height: 100%;
+	width: calc(50% - 10px);
+	margin: 0 5px 0;
+}
+
+/* 
+Doing this because the goofy <input type="file"> has a button AND text next to it that you can't style separately!?!
+
+So I hide this and create a second button that calls the .click() on the input type="file".... Stupid!
+*/
+input[type='file'] {
+	display: none;
+}
+
+.timecode {
+	width: 15%;
+	text-align: center;	
+}
+
+.subtitle  {
+	width: 70%;
+	text-align: center;	
+}
+
+.timecodeInput {
+	width: 7em;
+}
+
+.subtitleInput {
+	width: 90%;
+	height: 4.5em;
+	resize: none;	
+}
+
+.shiftSubtitle {
+	width: 7em;
+}
+
+.splitSubtitle {
+	width: 7em;
+}
+
+#SHIFT0 {
+	position: absolute;
+	top: 175px;
+	left: 25px;
+	width: 17em;
+}
+
+.controlGroup {
+
+	margin: .15em .5em .15em;
+	padding: 0em .25em .2em;
+/*	padding: .5em;
+	text-align: center;
+	min-width: 145px;
+	min-height: 45px;
+	padding: 0em;
+	margin: 0;		*/
+}
+
+
+.controlGroupStatus {
+	min-Height: 75px;
+	overflow-y: auto;	
+}
+
+.controlWrapper {
+	display: inline;
+	padding: .5em;
+	text-align: center;
+	min-width: 145px;
+	min-height: 45px;
+	padding: 0em;
+	margin-left: 10px;
+}
+
+.controlWrapper > div {
+	padding: 4px 0px 2px 0px;
+	margin: 0px 3px 2px 3px;
+}
+
+.controlWrapperShrink {
+	margin: 0 3.5px;
+}
+
+#instructionsContainer a:link {
+    text-decoration: none;
+}
+
+#instructionsContainer a:visited {
+    text-decoration: none;
+}
+
+.instructionsButton {
+	display: block;
+	border-radius: 5px;	
+	padding: 10px;
+	margin-left: 50px;
+	margin-top: 5px;
+	font-size: 100%;
+	width: 175px;
+}
+
+#instructionsTable {
+	width: 100%;
+	margin: 0;
+}
+
+#instructionsTable h1 {
+	margin: 0;
+	text-align: center;
+}
+
+.keyboardInputA, .keyboardInputB, .keyboardInputH {
+	width: 150px;
+	padding-left: 30px;
+	text-align: left;
+}
+
+.behaviorA, .behaviorB, behaviorH {
+	width: 670px;
+	padding-left: 10px;
+	text-align: left;
+	font-size: 90%;
+}
+
+.keyboardInputA, .behaviorA {
+	background-color: rgb(195,195,195);
+}
+
+.keyboardInputB, .behaviorB {
+	background-color: rgb(150,150,150);
+}
+
+.keyboardInputH, .behaviorH {
+	background-color: rgb(235,235,235);
+}
+
+svg {
+	padding-left: 15px;
+}
+
+.key {
+	border:1px solid gray;
+	padding:1px 5px;
+	margin:0 5px;
+	font-size:0.8em;
+	text-transform:uppercase;
+	-webkit-box-shadow:1px 0 1px 0 #fff, 0 2px 0 2px lightGray, 0 2px 0 3px #333;
+	-moz-box-shadow:1px 0 1px 0 #fff, 0 2px 0 2px lightGray, 0 2px 0 3px #333;
+	box-shadow:1px 0 1px 0 #fff, 0 2px 0 2px lightGray, 0 2px 0 3px #333;
+	-webkit-border-radius:3px;-moz-border-radius:3px;
+	border-radius:3px;
+	background:-moz-linear-gradient(left, #efefef 0%, #e2e2e2 25%);
+	background:-webkit-gradient(linear, left top, right top, color-stop(0%, #efefef), color-stop(25%, #e2e2e2));
+	background:-webkit-linear-gradient(left, #efefef 0%, #e2e2e2 25%);
+	background:-o-linear-gradient(left, #efefef 0%, #e2e2e2 25%);
+	background:-ms-linear-gradient(left, #efefef 0%, #e2e2e2 25%);
+	background:linear-gradient(left, #efefef 0%, #e2e2e2 25%);
+	filter:progid:DXImageTransform.Microsoft.gradient( startColorstr='#efefef', endColorstr='#e2e2e2', GradientType=1 );
+}
