@@ -16,12 +16,7 @@ not, see http://www.gnu.org/licenses/.
 */
 
 /* TODO: 
-	Reduce wasted CPU cycles drawing.. Maybe add a "data-draw" attribute to video and for range input changes or other events set it true..
-		otherwise if the video is paused we don't need to be drawing every frame.
-	
 	TAB doesn't let you set an in point when no video is loading but typing any key in the box does.. Look into this.
-	
-	loadSRTFile() - Store row0 values and then clear them so when you load it doesn't append the first subtitle to them. Then after loaded restore values.
 	
 	Look into rounding errors converting SRT to Native and Native to SRT
 	
@@ -33,9 +28,6 @@ not, see http://www.gnu.org/licenses/.
 		
 	Event Handler Cleanup:
 		Get rid of all the onchange, onclick, etc in the HTML and use addEventListener()'s instead
-		
-	Waveform preview
-		Subtitle fine tune alignment by displaying subtitles under the waveform
 	
 	Look into onChange events to verify that when changes are made no subtitles collide or have invalid in/out points
 		Handle overlap with "snap to" sorta functionality?
@@ -57,9 +49,6 @@ not, see http://www.gnu.org/licenses/.
 	Load text file as new subs by newlines 
 		squish to end of video and separate by 1 frame so UP/DOWN arrow can quickly resync
 			Add "squish" button for selected subs so you can resync easily
-			
-	Reaction time offset
-		Allow user to specify a value to subtract to in points so you're sub starts when you hear the dialogue.
 */
 
 /* Start CURRENT_ROW = 1 for two reasons...
@@ -463,17 +452,14 @@ function drawWaveform() {
 	var canvas = document.getElementById("waveformPreview");
 	var ctx=canvas.getContext('2d');
 	
-	//var CANVAS_HEIGHT=document.getElementById("waveformPreview").height;
-	//var CANVAS_WIDTH=document.getElementById("waveformPreview").width;	
 	ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 	
-	ctx.fillStyle = '#FFFFFF';
-	//ctx.lineCap = 'round';			
+	// Draw the playhead
+	ctx.fillStyle = '#FFFFFF';		
 	ctx.fillRect(LINES_PER_SECOND * PAST_WAVEFORM_AMOUNT,0,2,CANVAS_HEIGHT);
 	
-	ctx.fillStyle = '#F6D565';
-	//ctx.lineCap = 'round';		
-		
+	// Draw the audio samples
+	ctx.fillStyle = '#F6D565';	
 	for (var i=0; i < CANVAS_WIDTH; i++) {
 		if (i+startSample > PREVIEW_SAMPLES.length)
 			break;
@@ -483,6 +469,7 @@ function drawWaveform() {
 		}	
 	}
 	
+	// Draw any subtitles that appear within the audio currently being displayed
 	var x,y,w,h;
 	h=-15; y=CANVAS_HEIGHT;
    	ctx.strokeStyle = "#000000";
@@ -496,7 +483,6 @@ function drawWaveform() {
 		
 		var draw=false;
 		if (i == 0) {
-			console.log("i=0: " + curOut);
 			if (curOut == Number.POSITIVE_INFINITY)
 				curOut=videoTag.currentTime;
 			ctx.fillStyle = "rgba(0,255,0,.5)";
@@ -515,7 +501,7 @@ function drawWaveform() {
 		if (draw) {			
 			x=(curIn - startTime)*LINES_PER_SECOND;
 			w=(curOut - curIn)*LINES_PER_SECOND;
-/*			
+/*			TODO: Fix drawing outside of the bounds of the canvas for slight performance boost.
 			if (x < 0)
 				x=0;
 			if (w > canvas.width)
@@ -526,7 +512,6 @@ function drawWaveform() {
 			
 			ctx.fillStyle = "rgb(255,255,255)";
 			ctx.fillText(getSubtitle(i),x+5,y-4,w);
-			//console.log(x + " " + y + " " + w + " " + h);
 		}
 	}
 }
@@ -866,6 +851,8 @@ function addSub(insertAfter) {
 	else {
 		var target=document.getElementById("ROW" + insertAfter);
 		target.parentNode.insertBefore(row, target.nextSibling );
+		// Since we are inserting in the middle of the table we need to update all the IDs
+		updateIDs();
 	}
 	CURRENT_ROW++;
 
@@ -995,7 +982,6 @@ function shiftSubFinalize(event) {
 
 function updateIDs() {
 	var table=document.getElementById("subtitles");
-	
 	// The +1 is because ROW0, BOX0, IN0, OUT0, & SUB0 are in the other table
 		for (var i=0; i < table.rows.length; i++) {
 		offset=i+1;
@@ -1003,6 +989,8 @@ function updateIDs() {
 		fromTableRowIndex_getInPoint(table,i).id="IN"+offset;
 		fromTableRowIndex_getOutPoint(table,i).id="OUT"+offset;
 		fromTableRowIndex_getSubtitle(table,i).id="SUB"+offset;
+		fromTableRowIndex_getShiftSub(table,i).id="SHIFT"+offset;
+		fromTableRowIndex_getSplitSub(table,i).id="SPLIT"+offset;
 		table.rows[i].id="ROW"+offset;
 	}
 }
@@ -1083,6 +1071,12 @@ function fromTableRowIndex_getOutPoint(table, row) {
 }
 function fromTableRowIndex_getSubtitle(table, row) {
 	return table.rows[row].cells[3].firstChild;
+}
+function fromTableRowIndex_getShiftSub(table, row) {
+	return table.rows[row].cells[2].lastChild;
+}
+function fromTableRowIndex_getSplitSub(table, row) {
+	return table.rows[row].cells[2].lastChild;
 }
 
 function rewind() {
