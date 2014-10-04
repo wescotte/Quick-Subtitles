@@ -1073,10 +1073,10 @@ function fromTableRowIndex_getSubtitle(table, row) {
 	return table.rows[row].cells[3].firstChild;
 }
 function fromTableRowIndex_getShiftSub(table, row) {
-	return table.rows[row].cells[2].lastChild;
+	return table.rows[row].cells[1].lastChild;
 }
 function fromTableRowIndex_getSplitSub(table, row) {
-	return table.rows[row].cells[1].lastChild;
+	return table.rows[row].cells[2].lastChild;
 }
 
 function rewind() {
