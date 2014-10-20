@@ -760,12 +760,32 @@ function detectTimecodeOverlap(row, curIn, curOut) {
 	return overlap;
 }
 
-function addSub(insertAfter) {
+function findChronologicalInsertionPoint(inPoint) {
+	var insertAt=0; // Insert at the beginning by default unless we find a better spot
+	var foundSpot=false;
+	
+	for (var i=CURRENT_ROW - 1 ; i > 0; i--) {
+		if (inPoint > getTimecodeNative("IN", i)) {
+			insertAt=i+1;
+			foundSpot=true;
+			break;
+		}
+	} 
+	
+	// Check if we are still going to insert at the end. If so set back to -1
+	// because then we don't need to call updateIDs() and saves a bit of time...
+	if (insertAt == CURRENT_ROW && foundSpot)
+		insertAt=-1;
+			
+	return insertAt;
+}
+
+function addSub(insertAt) {
 	var inPoint=getTimecode("IN",0);
 	var inPointNative=getTimecodeNative("IN",0);
 	var outPoint=getTimecode("OUT",0);
 	var outPointNative=getTimecodeNative("OUT",0);
-	
+		
 	var overlapRow=detectTimecodeOverlap(0, inPointNative, outPointNative);
 	if (overlapRow != -1) {
 		updateStatusMessage("You can't add a subtitle that has timecode overlaping... Conflicts with row:" + overlapRow);
@@ -845,12 +865,22 @@ function addSub(insertAfter) {
 	td.appendChild(input);
 	row.appendChild(td);
 	
-	// Either inserts the subtitle at the end or inserts directly after row "insertAfter"
-	if (insertAfter == -1)			
+	// If we don't specific a specific insertion point then insert in a spot to keep them in chronological order
+	if (insertAt == -1)
+		insertAt=findChronologicalInsertionPoint(inPointNative);
+	
+	// Either inserts the subtitle at the end or inserts directly after row "insertAfter"	
+	if (insertAt == -1)			
 		document.getElementById("subtitles").appendChild(row);
 	else {
-		var target=document.getElementById("ROW" + insertAfter);
-		target.parentNode.insertBefore(row, target.nextSibling );
+		var table=document.getElementById("subtitles");
+		var insertPoint; 
+		if (insertAt == 0)
+			insertPoint=table.firstChild;
+		else
+			insertPoint=document.getElementById("ROW" + insertAt);
+			
+		table.insertBefore(row, insertPoint);	
 		// Since we are inserting in the middle of the table we need to update all the IDs
 		updateIDs();
 	}
