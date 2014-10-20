@@ -295,7 +295,10 @@ function calcSTLFrame(time) {
 	return pad(Math.floor(time / oneFrame), 2);
 }
 
-function init() {      
+function init() {
+	// By default arrow keys are enabled
+	toggleArrows();
+      
 	playSelectedFile = function playSelectedFileInit(event) {
 		var file = this.files[0];
 		var type = file.type;		
@@ -1316,7 +1319,7 @@ function processTab(event) {
 		return;
 	}
 	
-	if (event.shiftKey==true) {
+	if (event.ctrlKey==true) {
 		setTimecode("IN", 0, "");
 		return;
 	}
@@ -1379,6 +1382,10 @@ function processEnter(event) {
 	}
 }
 function processUpArrow(event) {
+	// If the user isn't holding down ALT or SHIFT when hitting an arrow then we are ignoring the input
+	if (event.shiftKey == false && event.altKey == false)	
+		return;
+		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
 	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
@@ -1386,7 +1393,7 @@ function processUpArrow(event) {
 
 	if (toggleArrows == "OFF" && (bottom || rightSide) )
 		return;
-		
+			
 	event.preventDefault();
 
 	var videoTag = document.getElementById("video");
@@ -1422,6 +1429,10 @@ function processUpArrow(event) {
 	resetDisplayedSubtitle();	
 }
 function processDownArrow(event) {
+	// If the user isn't holding down ALT or SHIFT when hitting an arrow then we are ignoring the input
+	if (event.shiftKey == false && event.altKey == false)	
+		return;
+		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
 	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
@@ -1465,6 +1476,10 @@ function processDownArrow(event) {
 	resetDisplayedSubtitle();		
 }
 function processLeftArrow(event) {
+	// If the user isn't holding down ALT or SHIFT when hitting an arrow then we are ignoring the input
+	if (event.shiftKey == false && event.altKey == false)	
+		return;
+		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
 	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
@@ -1494,6 +1509,10 @@ function processLeftArrow(event) {
 	resetDisplayedSubtitle();	
 }
 function processRightArrow(event) {
+	// If the user isn't holding down ALT or SHIFT when hitting an arrow then we are ignoring the input
+	if (event.shiftKey == false && event.altKey == false)	
+		return;
+		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
 	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
