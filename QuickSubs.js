@@ -919,6 +919,9 @@ function deleteSubs(event) {
 		
 	// Since we deleted rows let's refresh the current subtitle being displayed in case it deleted
 	resetDisplayedSubtitle();
+	
+	// Reset the status of the "Select All" checkbox because it shouldn't be checked if the user deleted the selection already.
+	document.getElementById("selectAllCheckbox").checked="";
 }
 function splitSub(event) {
 	var row=parseInt(event.target.id.slice(5));
@@ -1129,19 +1132,13 @@ function changePlayRate(rate) {
 	videoTag.playbackRate=1+(.1*rate);	
 }
 
-// TODO: Add getter/setter for "BOX"?
 function selectAll(checkBox) {
 		var state=checkBox.checked;
 		
 		var table=document.getElementById("subtitles");
 		for (var i=0; i < table.rows.length; i++) {
 			fromTableRowIndex_getCheckbox(table,i).checked=state;
-		}
-/*				
-		for (var i=1; i < CURRENT_ROW ; i++) {
-			document.getElementById("BOX"+i).checked=state;
-		}
-*/		
+		}	
 }
 function selectCheckBox(event) {	
 	if (event.shiftKey==true && LAST_BOX != -1) {
