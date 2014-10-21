@@ -349,3 +349,8 @@ svg {
 	background:linear-gradient(left, #efefef 0%, #e2e2e2 25%);
 	filter:progid:DXImageTransform.Microsoft.gradient( startColorstr='#efefef', endColorstr='#e2e2e2', GradientType=1 );
 }
+
+.key svg {
+	padding-left: 2px;
+	padding-right: 2px;
+}

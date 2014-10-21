@@ -76,7 +76,7 @@ var PAST_WAVEFORM_AMOUNT=1.5; // Show past 1.5 seconds of waveform
 
 var undoBuffer;
 var undoBufferSize=20;
-var undoPosition=1;
+var undoPosition=0;
 
 function setupUndoBuffer() {
 	undoBuffer=new Array(undoBufferSize);
@@ -208,7 +208,7 @@ function loadSRTFile() {
 				srtStep = 0;
 				if (counttext > 0)
 				{
-					addSub(-1);
+					addSub(-1,false);
 					// addSub() normally clears the subtitle(0) but it won't on failure/time conflict so we should manually have to do it here as well
 					setSubtitle(0, "", false);
 					counttext = 0;
@@ -236,7 +236,7 @@ function loadSRTFile() {
 				// We are on the last line so make sure we add the final subtitle
 				if (counter == lines.length)
 				{
-					addSub(-1);
+					addSub(-1, false);
 					// addSub() normally clears the subtitle(0) but it won't on failure/time conflict so we should manually have to do it here as well			
 					setSubtitle(0, "", false);
 				}
@@ -247,7 +247,6 @@ function loadSRTFile() {
 		setTimecode("IN", 0, oldIn, false);
 		setTimecode("OUT", 0, oldOut, false);
 		setSubtitle(0, oldSub, false);		
-		createUndoState();
 		
 		// Reset the file value to "" in the event the user attempts to load the same file again.
 		document.getElementById("loadSubtitles").value="";
@@ -381,8 +380,6 @@ function calcSTLFrame(time) {
 }
 
 function init() {
-	setupUndoBuffer();
-
 	// By default arrow keys are enabled
 	toggleArrows();
       
@@ -446,8 +443,6 @@ function init() {
 		
 		document.getElementById("waveformPreview").addEventListener("mousemove", dragWaveform);						
 	}
-	
-	createUndoState();
 }
 
 function checkReady() {
@@ -893,7 +888,11 @@ function findChronologicalInsertionPoint(inPoint) {
 	return insertAt;
 }
 
-function addSub(insertAt) {
+function addSub(insertAt, createUndo) {
+	if(typeof(createUndo)==='undefined') createUndo = true;
+	if (createUndo)
+		createUndoState();
+		
 	var inPoint=getTimecode("IN",0);
 	var inPointNative=getTimecodeNative("IN",0);
 	var outPoint=getTimecode("OUT",0);
@@ -1357,7 +1356,7 @@ function dragWaveform(event) {
 
 function processKeyboardInput(event) {
 	resetStatus();
-	
+	console.log(event);
 	var videoTag=document.getElementById("video");
 	switch(event.keyCode) {
 		case 9: processTab(event); 			break;
@@ -1408,7 +1407,8 @@ function processKeyboardInput(event) {
 		videoTag.setAttribute("shiftKey", "true");	
 	if (event.altKey == true)
 		videoTag.setAttribute("altKey", "true");
-
+	if (event.keyCode == 91) // Windows key or Mac Command key
+		videoTag.setAttribute("metaKey", "true");
 	forceDraw();	
 }
 function processKeyboardInputKeyUp(event) {
@@ -1417,7 +1417,9 @@ function processKeyboardInputKeyUp(event) {
 		case 16: // Shift key up
 			videoTag.setAttribute("shiftKey", "false");	break;
 		case 18: // Alt Key Up
-			videoTag.setAttribute("altKey", "false"); break;
+			videoTag.setAttribute("altKey", "false");	break;
+		case 91:
+			videoTag.setAttribute("metaKey", "false");	break;			
 	}
 }
 
@@ -1499,9 +1501,10 @@ function processEnter(event) {
 	}
 }
 function processUpArrow(event) {
-	// If the user isn't holding down ALT or SHIFT when hitting an arrow then we are ignoring the input
-	if (event.shiftKey == false && event.altKey == false)	
-		return;
+	var videoTag=document.getElementById("video");
+	// If the user isn't holding down META or SHIFT when hitting an arrow then we are ignoring the input
+	if (videoTag.getAttribute("shiftKey") != "true" && videoTag.getAttribute("metaKey") != "true")
+		return
 		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
@@ -1546,9 +1549,10 @@ function processUpArrow(event) {
 	resetDisplayedSubtitle();	
 }
 function processDownArrow(event) {
-	// If the user isn't holding down ALT or SHIFT when hitting an arrow then we are ignoring the input
-	if (event.shiftKey == false && event.altKey == false)	
-		return;
+	var videoTag=document.getElementById("video");
+	// If the user isn't holding down META or SHIFT when hitting an arrow then we are ignoring the input
+	if (videoTag.getAttribute("shiftKey") != "true" && videoTag.getAttribute("metaKey") != "true")
+		return
 		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
@@ -1593,9 +1597,10 @@ function processDownArrow(event) {
 	resetDisplayedSubtitle();		
 }
 function processLeftArrow(event) {
-	// If the user isn't holding down ALT or SHIFT when hitting an arrow then we are ignoring the input
-	if (event.shiftKey == false && event.altKey == false)	
-		return;
+	var videoTag=document.getElementById("video");
+	// If the user isn't holding down META or SHIFT when hitting an arrow then we are ignoring the input
+	if (videoTag.getAttribute("shiftKey") != "true" && videoTag.getAttribute("metaKey") != "true")
+		return
 		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
@@ -1626,9 +1631,10 @@ function processLeftArrow(event) {
 	resetDisplayedSubtitle();	
 }
 function processRightArrow(event) {
-	// If the user isn't holding down ALT or SHIFT when hitting an arrow then we are ignoring the input
-	if (event.shiftKey == false && event.altKey == false)	
-		return;
+	var videoTag=document.getElementById("video");
+	// If the user isn't holding down META or SHIFT when hitting an arrow then we are ignoring the input
+	if (videoTag.getAttribute("shiftKey") != "true" && videoTag.getAttribute("metaKey") != "true")
+		return
 		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
