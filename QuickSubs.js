@@ -74,6 +74,90 @@ var LINES_PER_SECOND;
 var VIDEO_SAMPLE_RATE;
 var PAST_WAVEFORM_AMOUNT=1.5; // Show past 1.5 seconds of waveform
 
+var undoBuffer;
+var undoBufferSize=20;
+var undoPosition=0;
+
+function setupUndoBuffer() {
+	undoBuffer=new Array(undoBufferSize);
+}
+function createUndoState() {
+	console.log("making buffer!");
+	var buffer=new Array(CURRENT_ROW);
+	
+	for (var i=0; i < CURRENT_ROW; i++) {
+		var t=new Object();
+		t.inP=getTimecode("IN", i);
+		t.outP=getTimecode("OUT", i);
+		t.subtitle=getSubtitle(i);
+		//t={inP: getTimecode("IN", i), outP: getTimecode("OUT", i), subtitle: getSubtitle(i)};
+		buffer[i]=t;
+	}
+		
+	var p=undoPosition % undoBufferSize;
+	undoBuffer[p]=buffer;
+			
+	undoPosition++;
+}
+function undo() {
+	undoPosition--;
+	if (undoPosition < 0) {
+		undoPosition = 0;
+		alert("Nothing to undo");
+	}	
+	
+	var p=undoPosition % undoBufferSize;
+
+	document.getElementById("subtitles").innerHTML="";
+	CURRENT_ROW = 1;
+	
+//	console.log("undoing: " + p);
+//	console.log(undoBuffer);
+
+	for (var i=undoBuffer[p].length-1; i > 0; i--) {
+		setTimecode("IN", 0, undoBuffer[p][i].inP, false);
+		setTimecode("OUT", 0, undoBuffer[p][i].outP, false);
+		setSubtitle(0, undoBuffer[p][i].subtitle, false);
+		addSub(-1);
+	}
+	
+	setTimecode("IN", 0, undoBuffer[p][0].inP, false);
+	setTimecode("OUT", 0, undoBuffer[p][0].outP, false);
+	setSubtitle(0, undoBuffer[p][0].subtitle, false);
+}	
+function redo() {
+	var p=undoPosition % undoBufferSize;	
+	console.log(undoBuffer[p]);
+	
+	if (undoBuffer[p] === 'undefined')
+		return;
+	
+	console.log("redoing...");	
+	if (undoBuffer[p].length === 'undefined') {
+		undoPosition--;
+		if (undoPosition < 0)
+			undoPosition=0;
+		alert("Nothing to redo!");
+		return;
+	}
+
+	document.getElementById("subtitles").innerHTML="";
+	CURRENT_ROW = 1;
+
+	for (var i=undoBuffer[p].length-1; i > 0; i--) {
+		setTimecode("IN", 0, undoBuffer[p][i].inP, false);
+		setTimecode("OUT", 0, undoBuffer[p][i].outP, false);
+		setSubtitle(0, undoBuffer[p][i].subtitle, false);
+		addSub(-1);
+	}
+	
+	setTimecode("IN", 0, undoBuffer[p][0].inP, false);
+	setTimecode("OUT", 0, undoBuffer[p][0].outP, false);
+	setSubtitle(0, undoBuffer[p][0].subtitle, false);	
+	
+	undoPosition++;	
+}
+
 function showInstructions() {
 	var iDiv=document.getElementById("instructionsContainer");
 	iDiv.style.display="block";
@@ -296,6 +380,8 @@ function calcSTLFrame(time) {
 }
 
 function init() {
+	setupUndoBuffer();
+
 	// By default arrow keys are enabled
 	toggleArrows();
       
@@ -438,7 +524,7 @@ function compressSamples(buffer) {
 	}
 	setInterval(drawWaveform, 1000/20);
 	forceDraw();
-	console.log(PREVIEW_SAMPLES);
+//	console.log(PREVIEW_SAMPLES);
 	console.log("done: currentSample:" + currentSample + " CompressedSampleBuffer:" + PREVIEW_SAMPLES.length + " FullSamples:" + data.length);
 }
 function drawWaveform() {
@@ -553,14 +639,22 @@ function updateOverlayText(newValue) {
 	document.getElementById("overlaySubtitle").innerHTML=newValue.replace(/\n/g, "<br/>").trim();
 }
 
-function setTimecode(type, row, newValue) {
+function setTimecode(type, row, newValue, createUndo) {
+	if(typeof(createUndo)==='undefined') createUndo = true;
+	if (createUndo)
+		createUndoState();
+		
 	var node = document.getElementById(type + row);
 	var changeEvent = new Event('change');
 	
 	node.value = newValue;
 	node.dispatchEvent(changeEvent);
 }
-function setTimecodeNative(type, row, newValue) {
+function setTimecodeNative(type, row, newValue, createUndo) {
+	if(typeof(createUndo)==='undefined') createUndo = true;
+	if (createUndo)
+		createUndoState();
+		
 	var node = document.getElementById(type + row);
 	var changeEvent = new Event('change');
 	
@@ -571,7 +665,12 @@ function setTimecodeNative(type, row, newValue) {
 }
 
 function getTimecode(type, row) {
-	return document.getElementById(type + row).value.trim();
+	var TC=document.getElementById(type + row);
+	
+	if (TC== null)
+		return "";
+	else
+		return TC.value.trim();
 }
 function getTimecodeNative(type, row) {
 	var tc=document.getElementById(type + row);
@@ -581,11 +680,19 @@ function getTimecodeNative(type, row) {
 		return Number.POSITIVE_INFINITY;
 }
 
-function setSubtitle(row, newValue) {
+function setSubtitle(row, newValue, createUndo) {
+	if(typeof(createUndo)==='undefined') createUndo = true;
+	if (createUndo)
+		createUndoState();
+		
 	document.getElementById("SUB" + row).value=newValue;	
 }
 function getSubtitle(row) {
-	return document.getElementById("SUB" + row).value;
+	var sub=document.getElementById("SUB" + row);
+	if (sub == null)
+		return "";
+	else
+		return sub.value;
 }
 function updateSubtitle(event) {	
 	var currentIn=document.getElementById("IN0");
@@ -822,7 +929,6 @@ function addSub(insertAt) {
 	td.appendChild(input);
 	row.appendChild(td);
 	
-	
 	td=document.createElement("td"); td.className="timecode";
 	input=document.createElement("input");
 	input.addEventListener('change', updateNativeTimecode);	
@@ -889,9 +995,9 @@ function addSub(insertAt) {
 	}
 	CURRENT_ROW++;
 
-	setTimecode("IN", 0, outPoint);
-	setTimecode("OUT", 0, "");
-	setSubtitle(0, "");
+	setTimecode("IN", 0, outPoint, false);
+	setTimecode("OUT", 0, "", false);
+	setSubtitle(0, "", false);
 }
 function deleteSubs(event) {
 	var table=document.getElementById("subtitles");
@@ -958,6 +1064,7 @@ function shiftSub(event) {
 	var oldOut=document.getElementById("OUT" + row).getAttribute("beforeSlide");
 
 	if ( isNaN(oldIn)  && isNaN(oldOut)  ) {
+		createUndoState();
 		document.getElementById("IN" + row).setAttribute("beforeSlide", curIn);
 		document.getElementById("OUT" + row).setAttribute("beforeSlide", curOut);
 		oldIn=curIn;
@@ -974,7 +1081,7 @@ function shiftSub(event) {
 	var newIn=Number(oldIn);
 	var newOut=Number(oldOut)	
 	var videoTag=document.getElementById("video");
-	console.log("Shift:" + videoTag.getAttribute("shiftKey") + " Alt:" + videoTag.getAttribute("altKey"));	
+	//console.log("Shift:" + videoTag.getAttribute("shiftKey") + " Alt:" + videoTag.getAttribute("altKey"));	
 	if (videoTag.getAttribute("altKey") != "true")
 		newIn=newIn + Number(event.target.value);
 	if (videoTag.getAttribute("shiftKey") != "true")
@@ -990,8 +1097,8 @@ function shiftSub(event) {
 		newOut=videoTag.duration;
 	}
 	
-	setTimecodeNative("IN", row, newIn);
-	setTimecodeNative("OUT", row, newOut);	
+	setTimecodeNative("IN", row, newIn, false);
+	setTimecodeNative("OUT", row, newOut, false);	
 	
 	forceDraw();
 }
@@ -1264,6 +1371,11 @@ function processKeyboardInput(event) {
 		 		showInstructions();
 		 	break; 
 		
+		case 113: 
+			undo(); break;
+		case 114:
+			redo(); break;
+				
 		case 27: // Escape key
 			if (videoTag.paused)
 				videoTag.play();
