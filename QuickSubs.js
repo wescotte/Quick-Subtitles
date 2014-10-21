@@ -76,7 +76,7 @@ var PAST_WAVEFORM_AMOUNT=1.5; // Show past 1.5 seconds of waveform
 
 var undoBuffer;
 var undoBufferSize=20;
-var undoPosition=0;
+var undoPosition=1;
 
 function setupUndoBuffer() {
 	undoBuffer=new Array(undoBufferSize);
@@ -127,13 +127,13 @@ function undo() {
 }	
 function redo() {
 	var p=undoPosition % undoBufferSize;	
-	console.log(undoBuffer[p]);
+	//console.log(undoBuffer[p]);
 	
-	if (undoBuffer[p] === 'undefined')
+	if (typeof(undoBuffer[p]) === 'undefined')
 		return;
 	
 	console.log("redoing...");	
-	if (undoBuffer[p].length === 'undefined') {
+	if (typeof(undoBuffer[p].length) === 'undefined') {
 		undoPosition--;
 		if (undoPosition < 0)
 			undoPosition=0;
@@ -210,7 +210,7 @@ function loadSRTFile() {
 				{
 					addSub(-1);
 					// addSub() normally clears the subtitle(0) but it won't on failure/time conflict so we should manually have to do it here as well
-					setSubtitle(0, "");
+					setSubtitle(0, "", false);
 					counttext = 0;
 				}
 			} else if (srtStep == 0) {
@@ -222,31 +222,32 @@ function loadSRTFile() {
 				var times = line.split(' ');
 				if (times[1] == "-->")
 				{
-					setTimecode("IN",  0, times[0].trim() );
-					setTimecode("OUT", 0, times[2].trim() );
+					setTimecode("IN",  0, times[0].trim(), false );
+					setTimecode("OUT", 0, times[2].trim(), false );
 					srtStep = 2;
 				}
 			} else if (srtStep == 2) {	
 				if (counttext > 0) 
-					setSubtitle(0, getSubtitle(0) + "\n");
+					setSubtitle(0, getSubtitle(0) + "\n", false);
 					
 				counttext++;
-				setSubtitle(0, getSubtitle(0) + line.trim());
+				setSubtitle(0, getSubtitle(0) + line.trim(), false);
 				
 				// We are on the last line so make sure we add the final subtitle
 				if (counter == lines.length)
 				{
 					addSub(-1);
 					// addSub() normally clears the subtitle(0) but it won't on failure/time conflict so we should manually have to do it here as well			
-					setSubtitle(0, "");
+					setSubtitle(0, "", false);
 				}
 			}									
 		}
 		
 		// Restore current values now that the file is loaded.
-		setTimecode("IN", 0, oldIn);
-		setTimecode("OUT", 0, oldOut);
-		setSubtitle(0, oldSub);		
+		setTimecode("IN", 0, oldIn, false);
+		setTimecode("OUT", 0, oldOut, false);
+		setSubtitle(0, oldSub, false);		
+		createUndoState();
 		
 		// Reset the file value to "" in the event the user attempts to load the same file again.
 		document.getElementById("loadSubtitles").value="";
@@ -445,6 +446,8 @@ function init() {
 		
 		document.getElementById("waveformPreview").addEventListener("mousemove", dragWaveform);						
 	}
+	
+	createUndoState();
 }
 
 function checkReady() {
@@ -1000,6 +1003,8 @@ function addSub(insertAt) {
 	setSubtitle(0, "", false);
 }
 function deleteSubs(event) {
+	createUndoState();
+		
 	var table=document.getElementById("subtitles");
 	
 	var numberDeleted=0;
