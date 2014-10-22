@@ -80,8 +80,38 @@ var undoPosition=0;
 
 function setupUndoBuffer() {
 	undoBuffer=new Array(undoBufferSize);
+	
+	for (var i=0; i < undoBufferSize; i++)
+		undoBuffer[i]=new Object();
 }
-function createUndoState() {
+function createUndoState(type, row, appendState) {
+	if(typeof(appendState)==='undefined') appendState = false;
+
+	var p=undoPosition % undoBufferSize;
+	/*	Make sure type of state is the same as the current state. 
+		Not sure how this could ever actually happen but if they don't match just create a new state anyway...
+	*/
+	if (appendState) {
+		if (undoBuffer[p].type != type)
+			appendState = false;
+	}
+	
+	if (!appendState) {
+		undoBuffer[p].type=type;
+		undoBuffer[p].data=new Array();
+	}
+	
+	var undoValue=new Object();
+	undoValue.row=row;
+	undoValue.inP=getTimecode("IN", row);
+	undoValue.outP=getTimecode("OUT", row);
+	undoValue.subtitle=getSubtitle(row);
+	
+	undoBuffer[undoPosition].data.push(undoValue);
+	
+	if (!appendState) 
+		undoPosition++;
+/*
 	console.log("making buffer!");
 	var buffer=new Array(CURRENT_ROW);
 	
@@ -97,9 +127,37 @@ function createUndoState() {
 	var p=undoPosition % undoBufferSize;
 	undoBuffer[p]=buffer;
 			
-	undoPosition++;
+	undoPosition++;*/
 }
 function undo() {
+	undoPosition--;
+	if (undoPosition < 0) {
+		undoPosition = 0;
+		alert("Nothing to undo");
+		return;
+	}	
+	
+	var p=undoPosition % undoBufferSize;
+	
+	var undoFunction;
+	switch (undoBuffer[p].type) {
+		case "C":
+			undoFunction=undoChange; 	break;	
+		case "A":
+			undoFunction=undoAdd; 		break;
+		case "R":
+			undoFunction=undoRemove;	break;
+		default:	// This should never happen but since we're altering a function callback it's a good idea to have
+			alert("Invalid undo type!" + undoBuffer[p].type);
+			return;
+		break;
+	}	
+	
+	console.log("length: " + undoBuffer[p].data.length);
+	for (var i=0; i < undoBuffer[p].data.length; i++) {
+		undoFunction(undoBuffer[p].data[i]);
+	}
+/*
 	undoPosition--;
 	if (undoPosition < 0) {
 		undoPosition = 0;
@@ -124,8 +182,10 @@ function undo() {
 	setTimecode("IN", 0, undoBuffer[p][0].inP, false);
 	setTimecode("OUT", 0, undoBuffer[p][0].outP, false);
 	setSubtitle(0, undoBuffer[p][0].subtitle, false);
+*/
 }	
 function redo() {
+/*
 	var p=undoPosition % undoBufferSize;	
 	//console.log(undoBuffer[p]);
 	
@@ -156,6 +216,17 @@ function redo() {
 	setSubtitle(0, undoBuffer[p][0].subtitle, false);	
 	
 	undoPosition++;	
+*/
+}
+
+function undoChange(data) {
+	setTimecode("IN", data.row, data.inP, false);
+	setTimecode("OUT", data.row, data.outP, false);
+	setSubtitle(data.row, data.subtitle, false);
+}
+function undoAdd(data) {
+}
+function undoRemove(data) {
 }
 
 function showInstructions() {
@@ -380,6 +451,7 @@ function calcSTLFrame(time) {
 }
 
 function init() {
+	setupUndoBuffer();
 	// By default arrow keys are enabled
 	toggleArrows();
       
@@ -637,10 +709,10 @@ function updateOverlayText(newValue) {
 	document.getElementById("overlaySubtitle").innerHTML=newValue.replace(/\n/g, "<br/>").trim();
 }
 
-function setTimecode(type, row, newValue, createUndo) {
+function setTimecode(type, row, newValue, createUndo, appendUndoState) {
 	if(typeof(createUndo)==='undefined') createUndo = true;
 	if (createUndo)
-		createUndoState();
+		createUndoState("C", row, appendUndoState);
 		
 	var node = document.getElementById(type + row);
 	var changeEvent = new Event('change');
@@ -1356,7 +1428,6 @@ function dragWaveform(event) {
 
 function processKeyboardInput(event) {
 	resetStatus();
-	console.log(event);
 	var videoTag=document.getElementById("video");
 	switch(event.keyCode) {
 		case 9: processTab(event); 			break;
@@ -1438,7 +1509,7 @@ function processTab(event) {
 		return;
 	}
 	
-	if (event.ctrlKey==true) {
+	if (event.altKey==true) {
 		setTimecode("IN", 0, "");
 		return;
 	}
@@ -1466,7 +1537,7 @@ function processEnter(event) {
 	}
 	
 	// CTRL + ENTER clears the OUT point
-	if (event.ctrlKey==true) {
+	if (event.altKey==true) {
 		event.preventDefault();
 		setTimecode("OUT", 0, "");
 		return;
