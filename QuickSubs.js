@@ -75,32 +75,35 @@ var VIDEO_SAMPLE_RATE;
 var PAST_WAVEFORM_AMOUNT=1.5; // Show past 1.5 seconds of waveform
 
 var undoBuffer;
-var undoBufferSize=20;
+var undoBufferSize=5;
 var undoPosition=0;
 
 function setupUndoBuffer() {
-	undoBuffer=new Array(undoBufferSize);
+	undoBuffer=new Array();
 	
-	for (var i=0; i < undoBufferSize; i++)
-		undoBuffer[i]=new Object();
+	// Create the initial undo state 
+	setSubtitle(0, ""); 
 }
 function createUndoState(type, row, appendState) {
-	if(typeof(appendState)==='undefined') appendState = false;
+	console.log("Making buffer " + type + " row: " + row + " " + appendState);
+	if(typeof(appendState)==='undefined') {
+		appendState = false;
+	}
 
-	var p=undoPosition % undoBufferSize;
 	/*	Make sure type of state is the same as the current state. 
-		Not sure how this could ever actually happen but if they don't match just create a new state anyway...
-	*/
+		Not sure how this could ever actually happen but if they don't match just create a new state anyway... 
 	if (appendState) {
-		if (undoBuffer[p].type != type)
+		if (undoBuffer[undoPosition].type != type) {
 			appendState = false;
+		}
 	}
-	
-	if (!appendState) {
-		undoBuffer[p].type=type;
-		undoBuffer[p].data=new Array();
+	*/	
+	if (typeof(undoBuffer[undoPosition]) == 'undefined' || appendState == false) {
+		undoBuffer[undoPosition]=new Object();
+		undoBuffer[undoPosition].type=type;
+		undoBuffer[undoPosition].data=new Array();
 	}
-	
+		
 	var undoValue=new Object();
 	undoValue.row=row;
 	undoValue.inP=getTimecode("IN", row);
@@ -109,38 +112,16 @@ function createUndoState(type, row, appendState) {
 	
 	undoBuffer[undoPosition].data.push(undoValue);
 	
+	/* If we are creating a new buffer then undoPosition should be incremented. However, if we reach the max size
+		just remove the first undo element from the array and since the new size is one less we don't have to increment it anymore. */
 	if (!appendState) 
-		undoPosition++;
-/*
-	console.log("making buffer!");
-	var buffer=new Array(CURRENT_ROW);
-	
-	for (var i=0; i < CURRENT_ROW; i++) {
-		var t=new Object();
-		t.inP=getTimecode("IN", i);
-		t.outP=getTimecode("OUT", i);
-		t.subtitle=getSubtitle(i);
-		//t={inP: getTimecode("IN", i), outP: getTimecode("OUT", i), subtitle: getSubtitle(i)};
-		buffer[i]=t;
-	}
-		
-	var p=undoPosition % undoBufferSize;
-	undoBuffer[p]=buffer;
-			
-	undoPosition++;*/
+		nextUndoState();
 }
 function undo() {
-	undoPosition--;
-	if (undoPosition < 0) {
-		undoPosition = 0;
-		alert("Nothing to undo");
-		return;
-	}	
-	
-	var p=undoPosition % undoBufferSize;
+	previousUndoState();
 	
 	var undoFunction;
-	switch (undoBuffer[p].type) {
+	switch (undoBuffer[undoPosition].type) {
 		case "C":
 			undoFunction=undoChange; 	break;	
 		case "A":
@@ -148,75 +129,65 @@ function undo() {
 		case "R":
 			undoFunction=undoRemove;	break;
 		default:	// This should never happen but since we're altering a function callback it's a good idea to have
-			alert("Invalid undo type!" + undoBuffer[p].type);
+			alert("Invalid undo type!" + undoBuffer[undoPosition].type);
 			return;
 		break;
 	}	
 	
-	console.log("length: " + undoBuffer[p].data.length);
-	for (var i=0; i < undoBuffer[p].data.length; i++) {
-		undoFunction(undoBuffer[p].data[i]);
-	}
-/*
-	undoPosition--;
-	if (undoPosition < 0) {
-		undoPosition = 0;
-		alert("Nothing to undo");
-	}	
-	
-	var p=undoPosition % undoBufferSize;
-
-	document.getElementById("subtitles").innerHTML="";
-	CURRENT_ROW = 1;
-	
-//	console.log("undoing: " + p);
-//	console.log(undoBuffer);
-
-	for (var i=undoBuffer[p].length-1; i > 0; i--) {
-		setTimecode("IN", 0, undoBuffer[p][i].inP, false);
-		setTimecode("OUT", 0, undoBuffer[p][i].outP, false);
-		setSubtitle(0, undoBuffer[p][i].subtitle, false);
-		addSub(-1);
+	for (var i=0; i < undoBuffer[undoPosition].data.length; i++) {
+		undoFunction(undoBuffer[undoPosition].data[i]);
 	}
 	
-	setTimecode("IN", 0, undoBuffer[p][0].inP, false);
-	setTimecode("OUT", 0, undoBuffer[p][0].outP, false);
-	setSubtitle(0, undoBuffer[p][0].subtitle, false);
-*/
+	if (undoBuffer[undoPosition].type == "A" || undoBuffer[undoPosition].type == "R")
+		updateIDs();
 }	
 function redo() {
-/*
-	var p=undoPosition % undoBufferSize;	
-	//console.log(undoBuffer[p]);
-	
-	if (typeof(undoBuffer[p]) === 'undefined')
-		return;
-	
-	console.log("redoing...");	
-	if (typeof(undoBuffer[p].length) === 'undefined') {
-		undoPosition--;
-		if (undoPosition < 0)
-			undoPosition=0;
-		alert("Nothing to redo!");
+	//nextUndoState();
+
+	// If no undo/redo state is defined then there is nothing to do
+	if (typeof(undoBuffer[undoPosition]) == 'undefined') {
+		//previousUndoState();
+		updateStatusMessage("Nothing to redo");
 		return;
 	}
-
-	document.getElementById("subtitles").innerHTML="";
-	CURRENT_ROW = 1;
-
-	for (var i=undoBuffer[p].length-1; i > 0; i--) {
-		setTimecode("IN", 0, undoBuffer[p][i].inP, false);
-		setTimecode("OUT", 0, undoBuffer[p][i].outP, false);
-		setSubtitle(0, undoBuffer[p][i].subtitle, false);
-		addSub(-1);
+		
+	var redoFunction;
+	switch (undoBuffer[undoPosition].type) {
+		case "C":
+			redoFunction=undoChange; 	break;	
+		case "A":	// Opposite function since when we redo we want to do the opposite of undo
+			redoFunction=undoRemove; 		break;
+		case "R":	// Opposite function since when we redo we want to do the opposite of undo
+			reoFunction=undoAdd;	break;
+		default:	// This should never happen but since we're altering a function callback it's a good idea to have
+			alert("Invalid undo type!" + undoBuffer[undoPosition].type);
+			return;
+		break;
+	}	
+	
+	for (var i=0; i < undoBuffer[undoPosition].data.length; i++) {
+		redoFunction(undoBuffer[undoPosition].data[i]);
 	}
-	
-	setTimecode("IN", 0, undoBuffer[p][0].inP, false);
-	setTimecode("OUT", 0, undoBuffer[p][0].outP, false);
-	setSubtitle(0, undoBuffer[p][0].subtitle, false);	
-	
-	undoPosition++;	
-*/
+
+	if (undoBuffer[undoPosition].type == "A" || undoBuffer[undoPosition].type == "R")
+		updateIDs();	
+		
+	nextUndoState();	
+}
+function nextUndoState() {
+	// If the undo history is too large drop the oldest state
+	if (undoPosition >= undoBufferSize) 
+		undoBuffer.shift();
+	else
+		undoPosition++;
+}
+function previousUndoState() {
+	undoPosition--;
+		
+	if (undoPosition < 0) {
+		undoPosition=0;
+		updateStatusMessage("Nothing to undo");
+	}	
 }
 
 function undoChange(data) {
@@ -225,8 +196,29 @@ function undoChange(data) {
 	setSubtitle(data.row, data.subtitle, false);
 }
 function undoAdd(data) {
+	var table=document.getElementById("subtitles");
+//	if (document.getElementById("ROW" + data.row) == null)
+		console.log(data);
+	//console.log(document.getElementById("ROW" + data.row).rowIndex + " " + getSubtitle(data.row));		
+	table.deleteRow(document.getElementById("ROW" + data.row).rowIndex);
+	CURRENT_ROW--;
 }
 function undoRemove(data) {
+	// Backup current values because we are will be overwriting them to reuse the addSub() code
+	var oldIn=getTimecode("IN", 0);
+	var oldOut=getTimecode("OUT", 0);
+	var oldSub=getSubtitle(0);	
+
+	console.log(data);
+	setTimecode("IN", 0, data.inP, false);
+	setTimecode("OUT", 0, data.outP, false);
+	setSubtitle(0, data.subtitle, false);			
+	addSub(-1,false, false);
+
+	// Restore current values now that the file is loaded.
+	setTimecode("IN", 0, oldIn, false);
+	setTimecode("OUT", 0, oldOut, false);
+	setSubtitle(0, oldSub, false);			
 }
 
 function showInstructions() {
@@ -279,7 +271,7 @@ function loadSRTFile() {
 				srtStep = 0;
 				if (counttext > 0)
 				{
-					addSub(-1,false);
+					addSub(-1,true, true);
 					// addSub() normally clears the subtitle(0) but it won't on failure/time conflict so we should manually have to do it here as well
 					setSubtitle(0, "", false);
 					counttext = 0;
@@ -307,12 +299,13 @@ function loadSRTFile() {
 				// We are on the last line so make sure we add the final subtitle
 				if (counter == lines.length)
 				{
-					addSub(-1, false);
+					addSub(-1,true, true);
 					// addSub() normally clears the subtitle(0) but it won't on failure/time conflict so we should manually have to do it here as well			
 					setSubtitle(0, "", false);
 				}
 			}									
 		}
+		nextUndoState();
 		
 		// Restore current values now that the file is loaded.
 		setTimecode("IN", 0, oldIn, false);
@@ -522,7 +515,7 @@ function checkReady() {
 	if (videoTag.readyState === 4)
 		generateWaveformPreview();
 	else		
-		setTimeout(checkReady, 1000);
+		setTimeout(checkReady, 100);
 }
 
 function generateWaveformPreview() {
@@ -710,34 +703,50 @@ function updateOverlayText(newValue) {
 }
 
 function setTimecode(type, row, newValue, createUndo, appendUndoState) {
-	if(typeof(createUndo)==='undefined') createUndo = true;
-	if (createUndo)
-		createUndoState("C", row, appendUndoState);
-		
 	var node = document.getElementById(type + row);
+	
+	if (node == null) {
+		updateStatusMessage("ERROR! Unable to set timecode: " + newValue + " for " + type + " point for row: " + row);
+		console.log("ERROR! Unable to set subtitle value for row: " + row + " Here is a table dump");
+		console.log(document.getElementById("subtitles"));
+		return;
+	}
+		
 	var changeEvent = new Event('change');
 	
 	node.value = newValue;
 	node.dispatchEvent(changeEvent);
-}
-function setTimecodeNative(type, row, newValue, createUndo) {
-	if(typeof(createUndo)==='undefined') createUndo = true;
+
+	if(typeof(createUndo)==='undefined') 
+		createUndo = true;
 	if (createUndo)
-		createUndoState();
-		
+		createUndoState("C", row, appendUndoState);	
+}
+function setTimecodeNative(type, row, newValue, createUndo, appendUndoState) {
 	var node = document.getElementById(type + row);
-	var changeEvent = new Event('change');
+	
+	if (node == null) {
+		updateStatusMessage("ERROR! Unable to set timecode: " + newValue + " for " + type + " point for row: " + row);
+		console.log("ERROR! Unable to set subtitle value for row: " + row + " Here is a table dump");
+		console.log(document.getElementById("subtitles"));
+		return;
+	}
 	
 	// The conversion from native to SRT gets screwy with fractional parts under 1/1000 of a second so it's best to round those off.
 	newValue=Math.round(newValue * 1000) / 1000;
 	node.setAttribute("data-nativetc", newValue);
 	node.value=convertTC_NativetoSRT(newValue);
+	
+	if(typeof(createUndo)==='undefined') 
+		createUndo = true;
+	if (createUndo)
+		createUndoState("C", row, appendUndoState);	
 }
 
 function getTimecode(type, row) {
 	var TC=document.getElementById(type + row);
 	
-	if (TC== null)
+	if (TC == null)
 		return "";
 	else
 		return TC.value.trim();
@@ -750,12 +759,22 @@ function getTimecodeNative(type, row) {
 		return Number.POSITIVE_INFINITY;
 }
 
-function setSubtitle(row, newValue, createUndo) {
-	if(typeof(createUndo)==='undefined') createUndo = true;
+function setSubtitle(row, newValue, createUndo, appendUndoState) {
+	var node=document.getElementById("SUB" + row);
+	
+	if (node == null) {
+		updateStatusMessage("ERROR! Unable to set subtitle value for row: " + row);
+		console.log("ERROR! Unable to set subtitle value for row: " + row + " Here is a table dump");
+		console.log(document.getElementById("subtitles"));
+		return;
+	}
+
+	node.value=newValue;
+	
+	if(typeof(createUndo)==='undefined') 
+		createUndo = true;
 	if (createUndo)
-		createUndoState();
-		
-	document.getElementById("SUB" + row).value=newValue;	
+		createUndoState("C", row, appendUndoState);		
 }
 function getSubtitle(row) {
 	var sub=document.getElementById("SUB" + row);
@@ -960,10 +979,9 @@ function findChronologicalInsertionPoint(inPoint) {
 	return insertAt;
 }
 
-function addSub(insertAt, createUndo) {
-	if(typeof(createUndo)==='undefined') createUndo = true;
-	if (createUndo)
-		createUndoState();
+function addSub(insertAt, createUndo, appendUndoState) {
+	if(typeof(createUndo)==='undefined') 
+		createUndo = true;
 		
 	var inPoint=getTimecode("IN",0);
 	var inPointNative=getTimecodeNative("IN",0);
@@ -1069,19 +1087,22 @@ function addSub(insertAt, createUndo) {
 	}
 	CURRENT_ROW++;
 
+	if (createUndo) {
+		createUndoState("A", row.id.substr(3), appendUndoState);
+	}
+	
 	setTimecode("IN", 0, outPoint, false);
 	setTimecode("OUT", 0, "", false);
 	setSubtitle(0, "", false);
 }
 function deleteSubs(event) {
-	createUndoState();
-		
 	var table=document.getElementById("subtitles");
 	
 	var numberDeleted=0;
 	// Start at 1 because 0 is the user input row
 	for (var i=1; i < CURRENT_ROW; i++) {
 		if (document.getElementById("BOX"+i).checked) {
+			createUndoState("R", i, true);
 			table.deleteRow(document.getElementById("ROW"+i).rowIndex);
 			numberDeleted++;
 		}
@@ -1091,6 +1112,8 @@ function deleteSubs(event) {
 	if (numberDeleted == 0)
 		return;
 		
+	nextUndoState();
+	
 	/* Reset index values to ensure random access via document.getElementById("IN" + index) still function. Otherwise we might have gaps
 		and if you loop from 0 to CURRENT_ROW document.getElementById("IN" + index) might be null. 
 	
@@ -1140,7 +1163,6 @@ function shiftSub(event) {
 	var oldOut=document.getElementById("OUT" + row).getAttribute("beforeSlide");
 
 	if ( isNaN(oldIn)  && isNaN(oldOut)  ) {
-		createUndoState();
 		document.getElementById("IN" + row).setAttribute("beforeSlide", curIn);
 		document.getElementById("OUT" + row).setAttribute("beforeSlide", curOut);
 		oldIn=curIn;
@@ -1173,8 +1195,8 @@ function shiftSub(event) {
 		newOut=videoTag.duration;
 	}
 	
-	setTimecodeNative("IN", row, newIn, false);
-	setTimecodeNative("OUT", row, newOut, false);	
+	setTimecodeNative("IN", row, newIn, false, false);
+	setTimecodeNative("OUT", row, newOut, false, false);	
 	
 	forceDraw();
 }
@@ -1188,9 +1210,11 @@ function shiftSubFinalize(event) {
 	var collideSub=detectTimecodeOverlap(row, curIn, curOut);
 	if (collideSub != -1) {
 		updateStatusMessage("Colliding with subtitle in row: " + collideSub);
-		setTimecodeNative("IN", row, oldIn);
-		setTimecodeNative("OUT", row, oldOut);
-	} 
+		setTimecodeNative("IN", row, oldIn, false, false);
+		setTimecodeNative("OUT", row, oldOut, false, false);
+	} else { 
+		createUndoState("C", row, false);	
+	}
 	
 	document.getElementById("IN" + row).setAttribute("beforeSlide", "null");
 	document.getElementById("OUT" + row).setAttribute("beforeSlide", "null");
@@ -1262,16 +1286,17 @@ function offsetSubs() {
 		if (document.getElementById("BOX"+i).checked) {
 			if (applyTo == "IN" || applyTo == "BOTH") {
 				newValue=convertTC_NativetoSRT(getTimecodeNative("IN", i) + amount);
-				setTimecode("IN", i, newValue);
+				setTimecode("IN", i, newValue, true, true);
 			}
 			problemRows += "\n";
 			if (applyTo == "OUT" || applyTo == "BOTH") {
 				newValue=convertTC_NativetoSRT(getTimecodeNative("OUT", i) + amount);
-				setTimecode("OUT", i, newValue);			
+				setTimecode("OUT", i, newValue,true, true);			
 			}	
 		}
 	}	
 	
+	nextUndoState();
 	forceDraw();	
 }
 
