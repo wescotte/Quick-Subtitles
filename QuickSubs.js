@@ -16,6 +16,8 @@ not, see http://www.gnu.org/licenses/.
 */
 
 /* TODO: 
+	GET SplitSub to redraw when you actually split
+	
 	TAB doesn't let you set an in point when no video is loading but typing any key in the box does.. Look into this.
 	
 	Look into rounding errors converting SRT to Native and Native to SRT
@@ -78,6 +80,73 @@ var undoBuffer;
 var undoBufferSize=100;
 var undoPosition=0;
 
+function init() {
+	setupUndoBuffer();
+	// By default arrow keys are enabled
+	toggleArrows();
+      
+	playSelectedFile = function playSelectedFileInit(event) {
+		var file = this.files[0];
+		var type = file.type;		
+		var videoNode = document.querySelector('video');
+		var canPlay = videoNode.canPlayType(type);
+		canPlay = (canPlay === '' ? ' Your browser does not support this video format.' : canPlay);
+		var message = type + ':' + canPlay;
+		var isError = canPlay === 'This format is not supported';
+		updateStatusMessage(message);
+		if (isError) {
+			return;
+		}
+			
+		var fileURL = URL.createObjectURL(file);
+		videoNode.src = fileURL;
+		
+		var videoTag = document.getElementById("video");
+		var timeTag = document.getElementById('currentTimecode');
+		videoTag.addEventListener('timeupdate',processTimeUpdate);
+		videoTag.addEventListener('play', resetDisplayedSubtitle);
+		videoTag.addEventListener('seeked', resetDisplayedSubtitle);
+
+		// We have to ensure the video is actually loaded before we should generate a waveform
+		setTimeout(checkReady, 500);			
+	}
+	
+	// Setup the font settings values
+	var overlay=document.getElementById("overlaySubtitle");
+	var style=window.getComputedStyle(overlay);
+	document.getElementById("fontColor").value=makeColorFromString(style.getPropertyValue('color'));
+	document.getElementById("bgColor").value=makeColorFromString(style.getPropertyValue('background-color'));
+	var fontSize=style.getPropertyValue("font-size");
+	fontSize=fontSize.replace("px", "");
+	document.getElementById("fontSize").value=fontSize;
+	document.getElementById("fontOpacity").value=parseFloat(style.getPropertyValue("opacity")).toFixed(2);
+		
+	var loadVideo = document.getElementById('loadVideo');
+	var loadSubtitles = document.getElementById("loadSubtitles");
+	var saveSubtitles = document.getElementById("saveSubtitles");
+		
+	var URL = window.URL || window.webkitURL
+	if (!URL) {
+		updateStatusMessage('Your browser is not ' + 
+						'<a href="http://caniuse.com/bloburls">supported</a>!');
+	} else {    
+		loadVideo.addEventListener('change', playSelectedFile, false);
+		loadSubtitles.addEventListener('change', loadSRTFile, false);	
+		document.addEventListener('keydown', processKeyboardInput);
+		document.addEventListener('keyup', processKeyboardInputKeyUp);
+		
+		document.getElementById("IN0").addEventListener('change', updateNativeTimecode);
+		document.getElementById("OUT0").addEventListener('change', updateNativeTimecode);
+		document.getElementById("SUB0").addEventListener('input', updateSubtitle);	
+		document.getElementById("SUB0").addEventListener('change', resetDisplayedSubtitle);
+		var shift0=document.getElementById("SHIFT0");
+		shift0.addEventListener('input', shiftSub);	
+		shift0.addEventListener('change', shiftSubFinalize);
+		
+		document.getElementById("waveformPreview").addEventListener("mousemove", dragWaveform);						
+	}
+}
+
 function setupUndoBuffer() {
 	undoBuffer=new Array();
 	
@@ -95,48 +164,50 @@ function createUndoState(type, row, appendState) {
 	if (undoPosition+1 < undoBufferSize)
 		undoBuffer[undoPosition+1]=null;
 
-	if (typeof(undoBuffer[undoPosition]) == 'undefined' || appendState == false) {
-		undoBuffer[undoPosition]=new Object();
-		undoBuffer[undoPosition].type=type;
-		undoBuffer[undoPosition].data=new Array();
+	if (undoBuffer[undoPosition] == null || appendState == false) {
+		undoBuffer[undoPosition]=new Array();
 	}
-		
-	var undoValue=new Object();
-	undoValue.row=row;
-	undoValue.inP=getTimecode("IN", row);
-	undoValue.outP=getTimecode("OUT", row);
-	undoValue.subtitle=getSubtitle(row);
+
+	// This is because the addSub undoState is initially created using a row <tr>...</tr> contents rather than the custom object
+	if (type == "ENDAPPEND") {
+		rebuildBuffer();
+		appendState=false;
+	} else {		
+		var undoValue=new Object();
+		undoValue.type=type;
+		undoValue.row=row;
+		undoValue.inP=getTimecode("IN", row);
+		undoValue.outP=getTimecode("OUT", row);
+		undoValue.subtitle=getSubtitle(row);
 	
-	undoBuffer[undoPosition].data.push(undoValue);
-	
-	/* If we are creating a new buffer then undoPosition should be incremented. However, if we reach the max size
-		just remove the first undo element from the array and since the new size is one less we don't have to increment it anymore. */
-	if (!appendState) {
-		// This is because the addSub undoState is initially created using a row <tr>...</tr> contents rather than the custom object
-		if (undoBuffer[undoPosition].type == "A")
-			rebuildBuffer();
-			
+		undoBuffer[undoPosition].push(undoValue);
+	}
+
+	if (!appendState) 	
 		nextUndoState();
-	}	
+		
 	console.log(undoBuffer);
 }
 function rebuildBuffer() {
 	var IN, OUT, SUB;
 	var table=document.getElementById("subtitles");
 
-	for (var i=0; i < undoBuffer[undoPosition].data.length; i++) {
-		var rowIndex=undoBuffer[undoPosition].data[i].row.rowIndex;
-		IN=fromTableRowIndex_getInPoint(table,rowIndex).value;
-		OUT=fromTableRowIndex_getOutPoint(table,rowIndex).value;	
-		SUB=fromTableRowIndex_getSubtitle(table,rowIndex).value;
+	for (var i=0; i < undoBuffer[undoPosition].length; i++) {
+		if (undoBuffer[undoPosition][i].type == "REBUILD") {
+			var rowIndex=undoBuffer[undoPosition][i].row.rowIndex;
+			IN=fromTableRowIndex_getInPoint(table,rowIndex).value;
+			OUT=fromTableRowIndex_getOutPoint(table,rowIndex).value;	
+			SUB=fromTableRowIndex_getSubtitle(table,rowIndex).value;
 		
-		var undoValue=new Object();
-		undoValue.row=undoBuffer[undoPosition].data[i].row.id.substr(3);
-		undoValue.inP=getTimecode("IN", undoValue.row);
-		undoValue.outP=getTimecode("OUT", undoValue.row);
-		undoValue.subtitle=getSubtitle(undoValue.row);		
+			var undoValue=new Object();
+			undoValue.type="A";
+			undoValue.row=undoBuffer[undoPosition][i].row.id.substr(3);
+			undoValue.inP=getTimecode("IN", undoValue.row);
+			undoValue.outP=getTimecode("OUT", undoValue.row);
+			undoValue.subtitle=getSubtitle(undoValue.row);		
 		
-		undoBuffer[undoPosition].data[i]=undoValue;				
+			undoBuffer[undoPosition][i]=undoValue;	
+		}	
 	}
 }
 function undo() {
@@ -146,30 +217,33 @@ function undo() {
 	var oldIn=getTimecode("IN", 0);
 	var oldOut=getTimecode("OUT", 0);
 	var oldSub=getSubtitle(0);	
-		
-	var undoFunction;
-	switch (undoBuffer[undoPosition].type) {
-		case "C":
-			undoFunction=undoChange; 	break;	
-		case "A":
-			undoFunction=undoAdd; 		break;
-		case "R":
-			undoFunction=undoRemove;	break;
-		default:	// This should never happen but since we're altering a function callback it's a good idea to have
-			alert("Invalid undo type!" + undoBuffer[undoPosition].type);
-			return;
-		break;
-	}	
 	
-	for (var i=0; i < undoBuffer[undoPosition].data.length; i++) {
-		undoFunction(undoBuffer[undoPosition].data[i]);
+	var restoreInput=false;
+	var rebuildIDs=false;
+	for (var i=0; i < undoBuffer[undoPosition].length; i++) {
+		switch (undoBuffer[undoPosition][i].type) {
+			case "C":
+				undoChange(undoBuffer[undoPosition][i]); 		break;	
+			case "A":
+				rebuildIDs=true;
+				undoAdd(undoBuffer[undoPosition][i]); 			break;
+			case "R":
+				restoreInput=true;
+				rebuildIDs=true;
+				undoRemove(undoBuffer[undoPosition][i]);		break;
+			default:	// This should never happen but since we're altering a function callback it's a good idea to have
+				console.log("INVALID UNDO BUFFER!");
+				console.log(undoBuffer[undoPosition][i]);
+				updateStatusMessage("INVALID UNDO BUFFER! This should never occur please report this bug.");				
+				return;											break;
+		}		
 	}
 	
-	if (undoBuffer[undoPosition].type == "A" || undoBuffer[undoPosition].type == "R")
+	if (rebuildIDs)
 		updateIDs();
 	
 	// Restore values that were overwritten with addSub()	
-	if (undoBuffer[undoPosition].type == "R") {
+	if (restoreInput) {
 		setTimecode("IN", 0, oldIn, false);
 		setTimecode("OUT", 0, oldOut, false);
 		setSubtitle(0, oldSub, false);		
@@ -178,7 +252,6 @@ function undo() {
 function redo() {
 	// If no undo/redo state is defined then there is nothing to do
 	if (undoBuffer[undoPosition] == null) {
-		//previousUndoState();
 		updateStatusMessage("Nothing to redo");
 		return;
 	}
@@ -187,30 +260,33 @@ function redo() {
 	var oldIn=getTimecode("IN", 0);
 	var oldOut=getTimecode("OUT", 0);
 	var oldSub=getSubtitle(0);	
-			
-	var redoFunction;
-	switch (undoBuffer[undoPosition].type) {
-		case "C":
-			redoFunction=undoChange; 	break;	
-		case "A":	// Opposite function since when we redo we want to do the opposite of undo
-			redoFunction=undoRemove; 		break;
-		case "R":	// Opposite function since when we redo we want to do the opposite of undo
-			reoFunction=undoAdd;	break;
-		default:	// This should never happen but since we're altering a function callback it's a good idea to have
-			alert("Invalid undo type!" + undoBuffer[undoPosition].type);
-			return;
-		break;
-	}	
-	
-	for (var i=0; i < undoBuffer[undoPosition].data.length; i++) {
-		redoFunction(undoBuffer[undoPosition].data[i]);
+
+	var restoreInput=false;
+	var rebuildIDs=false;			
+	for (var i=0; i < undoBuffer[undoPosition].length; i++) {
+		switch (undoBuffer[undoPosition][i].type) {
+			case "C":
+				undoChange(undoBuffer[undoPosition][i]); 		break;	
+			case "A":	// Opposite function since when we redo we want to do the opposite of undo
+				restoreInput=true;
+				rebuildIDs=true;
+				undoRemove(undoBuffer[undoPosition][i]); 		break;
+			case "R":	// Opposite function since when we redo we want to do the opposite of undo
+				rebuildIDs=true;
+				undoAdd(undoBuffer[undoPosition][i]);			break;
+			default:	// This should never happen but since we're altering a function callback it's a good idea to have
+				console.log("INVALID REDO BUFFER!");
+				console.log(undoBuffer[undoPosition][i]);
+				updateStatusMessage("INVALID REDO BUFFER! This should never occur please report this bug.");				
+				return;											break;
+		}		
 	}
 
-	if (undoBuffer[undoPosition].type == "A" || undoBuffer[undoPosition].type == "R")
+	if (rebuildIDs)
 		updateIDs();	
 
 	// Restore values that were overwritten with addSub()	
-	if (undoBuffer[undoPosition].type == "A") {
+	if (restoreInput) {
 		setTimecode("IN", 0, oldIn, false);
 		setTimecode("OUT", 0, oldOut, false);
 		setSubtitle(0, oldSub, false);		
@@ -241,8 +317,8 @@ function undoChange(data) {
 }
 function undoAdd(data) {
 	var table=document.getElementById("subtitles");
-
-	table.deleteRow(data.row.rowIndex);	
+	var row=document.getElementById("ROW"+data.row).rowIndex;
+	table.deleteRow(row);	
 	CURRENT_ROW--;
 }
 function undoRemove(data) {
@@ -489,73 +565,6 @@ function calcSTLFrame(time) {
 	const oneFrame = 1000/(30000/1001);
 	
 	return pad(Math.floor(time / oneFrame), 2);
-}
-
-function init() {
-	setupUndoBuffer();
-	// By default arrow keys are enabled
-	toggleArrows();
-      
-	playSelectedFile = function playSelectedFileInit(event) {
-		var file = this.files[0];
-		var type = file.type;		
-		var videoNode = document.querySelector('video');
-		var canPlay = videoNode.canPlayType(type);
-		canPlay = (canPlay === '' ? ' Your browser does not support this video format.' : canPlay);
-		var message = type + ':' + canPlay;
-		var isError = canPlay === 'This format is not supported';
-		updateStatusMessage(message);
-		if (isError) {
-			return;
-		}
-			
-		var fileURL = URL.createObjectURL(file);
-		videoNode.src = fileURL;
-		
-		var videoTag = document.getElementById("video");
-		var timeTag = document.getElementById('currentTimecode');
-		videoTag.addEventListener('timeupdate',processTimeUpdate);
-		videoTag.addEventListener('play', resetDisplayedSubtitle);
-		videoTag.addEventListener('seeked', resetDisplayedSubtitle);
-
-		// We have to ensure the video is actually loaded before we should generate a waveform
-		setTimeout(checkReady, 500);			
-	}
-	
-	// Setup the font settings values
-	var overlay=document.getElementById("overlaySubtitle");
-	var style=window.getComputedStyle(overlay);
-	document.getElementById("fontColor").value=makeColorFromString(style.getPropertyValue('color'));
-	document.getElementById("bgColor").value=makeColorFromString(style.getPropertyValue('background-color'));
-	var fontSize=style.getPropertyValue("font-size");
-	fontSize=fontSize.replace("px", "");
-	document.getElementById("fontSize").value=fontSize;
-	document.getElementById("fontOpacity").value=parseFloat(style.getPropertyValue("opacity")).toFixed(2);
-		
-	var loadVideo = document.getElementById('loadVideo');
-	var loadSubtitles = document.getElementById("loadSubtitles");
-	var saveSubtitles = document.getElementById("saveSubtitles");
-		
-	var URL = window.URL || window.webkitURL
-	if (!URL) {
-		updateStatusMessage('Your browser is not ' + 
-						'<a href="http://caniuse.com/bloburls">supported</a>!');
-	} else {    
-		loadVideo.addEventListener('change', playSelectedFile, false);
-		loadSubtitles.addEventListener('change', loadSRTFile, false);	
-		document.addEventListener('keydown', processKeyboardInput);
-		document.addEventListener('keyup', processKeyboardInputKeyUp);
-		
-		document.getElementById("IN0").addEventListener('change', updateNativeTimecode);
-		document.getElementById("OUT0").addEventListener('change', updateNativeTimecode);
-		document.getElementById("SUB0").addEventListener('input', updateSubtitle);	
-		document.getElementById("SUB0").addEventListener('change', resetDisplayedSubtitle);
-		var shift0=document.getElementById("SHIFT0");
-		shift0.addEventListener('input', shiftSub);	
-		shift0.addEventListener('change', shiftSubFinalize);
-		
-		document.getElementById("waveformPreview").addEventListener("mousemove", dragWaveform);						
-	}
 }
 
 function checkReady() {
@@ -1151,7 +1160,7 @@ function addSub(insertAt, createUndo, appendUndoState) {
 	CURRENT_ROW++;
 
 	if (createUndo) {
-		createUndoState("A", row, appendUndoState);
+		createUndoState("REBUILD", row, appendUndoState);
 	}
 
 	setTimecode("IN", 0, outPoint, false);		
@@ -1204,33 +1213,41 @@ function splitSub(event) {
 	var tempSub=getSubtitle(0);
 	
 	var halfWayPoint=(getTimecodeNative("OUT", row) - getTimecodeNative("IN", row)) / 2;
-	setTimecodeNative("IN", 0, getTimecodeNative("IN", row) + halfWayPoint);
-	setTimecodeNative("OUT", 0, getTimecodeNative("OUT", row));
-	setSubtitle(0, getSubtitle(row));
-	
-	setTimecodeNative("OUT", row, getTimecodeNative("IN", row) + halfWayPoint);
-	addSub(row);
+	setTimecodeNative("IN", 0, getTimecodeNative("IN", row) + halfWayPoint, false);
+	setTimecodeNative("OUT", 0, getTimecodeNative("OUT", row), false);
+	setSubtitle(0, getSubtitle(row), false);
+
+	// turn off the checkbox
+	document.getElementById("BOX"+row).checked="";
+		
+	setTimecodeNative("OUT", row, getTimecodeNative("IN", row) + halfWayPoint, true, true);
+	addSub(row, true, true);
+	createUndoState("ENDAPPEND", 0, true);	
+
 	
 	// Restore backups
 	setTimecode("IN", 0, tempIn);
 	setTimecode("OUT", 0, tempOut);
 	setSubtitle(0, tempSub);
+	
 }
 
 function shiftSub(event) {
 	var row=parseInt(event.target.id.slice(5));
+
 	var curIn=getTimecodeNative("IN",row);
 	var curOut=getTimecodeNative("OUT",row);
-
+	console.log("curIn: " + curIn + " curOut: " + curOut);
+	
 	var oldIn=document.getElementById("IN" + row).getAttribute("beforeSlide");
 	var oldOut=document.getElementById("OUT" + row).getAttribute("beforeSlide");
 
-	if ( isNaN(oldIn)  && isNaN(oldOut)  ) {
+	if ( (isNaN(oldIn) || isNaN(oldOut) ) || (oldIn == null || oldOut == null) ) {
 		document.getElementById("IN" + row).setAttribute("beforeSlide", curIn);
 		document.getElementById("OUT" + row).setAttribute("beforeSlide", curOut);
 		oldIn=curIn;
 		oldOut=curOut;
-	}
+	} 
 	
 	var inP=getTimecode("IN", row);
 	var outP=getTimecode("OUT", row);
@@ -1239,15 +1256,17 @@ function shiftSub(event) {
 		event.target.value="0";
 		return;
 	}
+
 	var newIn=Number(oldIn);
 	var newOut=Number(oldOut)	
 	var videoTag=document.getElementById("video");
-	//console.log("Shift:" + videoTag.getAttribute("shiftKey") + " Alt:" + videoTag.getAttribute("altKey"));	
+
+		
 	if (videoTag.getAttribute("altKey") != "true")
 		newIn=newIn + Number(event.target.value);
 	if (videoTag.getAttribute("shiftKey") != "true")
 		newOut=newOut + Number(event.target.value);
-		
+			
 	if (newIn < 0) {
 		newOut=newOut - newIn; // Do this to keep the subtitle the same total duration
 		newIn = 0;
@@ -1270,6 +1289,7 @@ function shiftSubFinalize(event) {
 	var oldIn=document.getElementById("IN" + row).getAttribute("beforeSlide");
 	var oldOut=document.getElementById("OUT" + row).getAttribute("beforeSlide");
 			
+	console.log(oldIn + " " + oldOut);		
 	var collideSub=detectTimecodeOverlap(row, curIn, curOut);
 	if (collideSub != -1) {
 		updateStatusMessage("Colliding with subtitle in row: " + collideSub);
@@ -1511,7 +1531,6 @@ function dragWaveform(event) {
 			if (event.shiftKey == true)
 				adjust=adjust*10;
 			var videoTag=document.getElementById("video");
-			console.log(adjust);
 			videoTag.currentTime = videoTag.currentTime + adjust;
 			canvas.setAttribute("data-lastPosition", event.x);
 			forceDraw();
@@ -1663,7 +1682,9 @@ function processEnter(event) {
 			return;
 		}
 	
-		addSub(-1);
+		createUndoState("C", 0, true, true);
+		addSub(-1, true, true);
+		createUndoState("ENDAPPEND", 0, true);		
 	}
 }
 function processUpArrow(event) {

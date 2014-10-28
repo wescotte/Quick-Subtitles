@@ -330,11 +330,12 @@ svg {
 	padding-left: 15px;
 }
 
-.key {
+
+kbd {
 	border:1px solid gray;
 	padding:1px 5px;
 	margin:0 5px;
-	font-size:0.8em;
+	font-size:1em;
 	text-transform:uppercase;
 	-webkit-box-shadow:1px 0 1px 0 #fff, 0 2px 0 2px lightGray, 0 2px 0 3px #333;
 	-moz-box-shadow:1px 0 1px 0 #fff, 0 2px 0 2px lightGray, 0 2px 0 3px #333;
@@ -350,7 +351,7 @@ svg {
 	filter:progid:DXImageTransform.Microsoft.gradient( startColorstr='#efefef', endColorstr='#e2e2e2', GradientType=1 );
 }
 
-.key svg {
+kbd svg {
 	padding-left: 2px;
 	padding-right: 2px;
 }
