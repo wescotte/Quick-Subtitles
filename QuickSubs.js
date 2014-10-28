@@ -87,6 +87,11 @@ function init() {
       
 	playSelectedFile = function playSelectedFileInit(event) {
 		var file = this.files[0];
+		if(typeof(file)==='undefined') {
+			updateStatusMessage("Warning: Unable to load file.");
+			return;
+		}
+		
 		var type = file.type;		
 		var videoNode = document.querySelector('video');
 		var canPlay = videoNode.canPlayType(type);
@@ -161,8 +166,10 @@ function createUndoState(type, row, appendState) {
 	/*	When creating a state it should always be the most recent event. If any exist after it we have to clear them
 		else risk losing sync.. This occurs when you undo several times, do something "new", and then attempt to redo.
 		After you do something "new" all states after it should be cleared as you're creating a new branch at that point */
-	if (undoPosition+1 < undoBufferSize)
+	if (undoPosition+1 < undoBufferSize) {
 		undoBuffer[undoPosition+1]=null;
+		undoBuffer=undoBuffer.splice(0,undoPosition+2);	
+	}
 
 	if (undoBuffer[undoPosition] == null || appendState == false) {
 		undoBuffer[undoPosition]=new Array();
@@ -201,7 +208,7 @@ function rebuildBuffer() {
 		
 			var undoValue=new Object();
 			undoValue.type="A";
-			undoValue.row=undoBuffer[undoPosition][i].row.id.substr(3);
+			undoValue.row=Number(undoBuffer[undoPosition][i].row.id.substr(3));
 			undoValue.inP=getTimecode("IN", undoValue.row);
 			undoValue.outP=getTimecode("OUT", undoValue.row);
 			undoValue.subtitle=getSubtitle(undoValue.row);		
@@ -218,17 +225,17 @@ function undo() {
 	var oldOut=getTimecode("OUT", 0);
 	var oldSub=getSubtitle(0);	
 	
-	var restoreInput=false;
 	var rebuildIDs=false;
 	for (var i=0; i < undoBuffer[undoPosition].length; i++) {
 		switch (undoBuffer[undoPosition][i].type) {
+			case "CR": break; // ignored for redos		
+			case "CU":
 			case "C":
 				undoChange(undoBuffer[undoPosition][i]); 		break;	
 			case "A":
 				rebuildIDs=true;
 				undoAdd(undoBuffer[undoPosition][i]); 			break;
 			case "R":
-				restoreInput=true;
 				rebuildIDs=true;
 				undoRemove(undoBuffer[undoPosition][i]);		break;
 			default:	// This should never happen but since we're altering a function callback it's a good idea to have
@@ -242,12 +249,6 @@ function undo() {
 	if (rebuildIDs)
 		updateIDs();
 	
-	// Restore values that were overwritten with addSub()	
-	if (restoreInput) {
-		setTimecode("IN", 0, oldIn, false);
-		setTimecode("OUT", 0, oldOut, false);
-		setSubtitle(0, oldSub, false);		
-	}
 }	
 function redo() {
 	// If no undo/redo state is defined then there is nothing to do
@@ -256,19 +257,14 @@ function redo() {
 		return;
 	}
 
-	// Backup current values because we are will be overwriting them to reuse the addSub() code
-	var oldIn=getTimecode("IN", 0);
-	var oldOut=getTimecode("OUT", 0);
-	var oldSub=getSubtitle(0);	
-
-	var restoreInput=false;
 	var rebuildIDs=false;			
 	for (var i=0; i < undoBuffer[undoPosition].length; i++) {
 		switch (undoBuffer[undoPosition][i].type) {
-			case "C":
+			case "CU": break; // ignored for redos
+			case "CR":
+			case "C":			
 				undoChange(undoBuffer[undoPosition][i]); 		break;	
 			case "A":	// Opposite function since when we redo we want to do the opposite of undo
-				restoreInput=true;
 				rebuildIDs=true;
 				undoRemove(undoBuffer[undoPosition][i]); 		break;
 			case "R":	// Opposite function since when we redo we want to do the opposite of undo
@@ -284,13 +280,6 @@ function redo() {
 
 	if (rebuildIDs)
 		updateIDs();	
-
-	// Restore values that were overwritten with addSub()	
-	if (restoreInput) {
-		setTimecode("IN", 0, oldIn, false);
-		setTimecode("OUT", 0, oldOut, false);
-		setSubtitle(0, oldSub, false);		
-	}
 			
 	nextUndoState();	
 }
@@ -381,6 +370,9 @@ function loadSRTFile() {
 		var oldIn=getTimecode("IN", 0);
 		var oldOut=getTimecode("OUT", 0);
 		var oldSub=getSubtitle(0);
+		
+		// Clear the current subtitle so it's not appended to the first sub we load
+		setSubtitle(0, "", false, false);
 			
 		for (var l in lines) {
 			line=lines[l];
@@ -423,18 +415,14 @@ function loadSRTFile() {
 				}
 			}									
 		}	
-		/* We need to rebuild the undoBuffer because when we load the file there is a chance that the subtitles are processed out of order...
-			ie the ROW##, IN##, OUT##, SUB## values change via addSub() calling updateIDs().
-			So we need to pass the entire <tr>...</tr> when creating the buffer so we are always referencing the correct subtitle.
-			However, once all subtitles are loaded we can rebuild the undoBuffer to the standard format of data.row, data.inP, data.outP, data.subtitle
-			since it can't go out of sync anymore... */
-		rebuildBuffer();
-		nextUndoState();
-		
 		// Restore current values now that the file is loaded.
 		setTimecode("IN", 0, oldIn, false);
 		setTimecode("OUT", 0, oldOut, false);
 		setSubtitle(0, oldSub, false);		
+
+		// Create undo state for the current subtitle ended in ROW0
+		createUndoState("CR", 0, true, true);		
+		createUndoState("ENDAPPEND", 0, true);	
 		
 		// Reset the file value to "" in the event the user attempts to load the same file again.
 		document.getElementById("loadSubtitles").value="";
@@ -1192,7 +1180,7 @@ function deleteSubs(event) {
 		So when we erase rows we just remove the gaps so everything else functions normally and we don't have to constantly check that
 		references exist because we ensure they do.
 	*/
-	updateIDs();
+	// updateIDs();
 	
 	// Never actually 0 because we always count our data entry line
 	CURRENT_ROW=table.rows.length + 1;
@@ -1202,6 +1190,8 @@ function deleteSubs(event) {
 	
 	// Reset the status of the "Select All" checkbox because it shouldn't be checked if the user deleted the selection already.
 	document.getElementById("selectAllCheckbox").checked="";
+	
+	forceDraw();
 }
 function splitSub(event) {
 	var row=parseInt(event.target.id.slice(5));
@@ -1212,24 +1202,31 @@ function splitSub(event) {
 	var tempOut=getTimecode("OUT", 0);
 	var tempSub=getSubtitle(0);
 	
+	// Create a undo state for the original IN/OUT length
+	createUndoState("CU", row, true);
+	
 	var halfWayPoint=(getTimecodeNative("OUT", row) - getTimecodeNative("IN", row)) / 2;
-	setTimecodeNative("IN", 0, getTimecodeNative("IN", row) + halfWayPoint, false);
-	setTimecodeNative("OUT", 0, getTimecodeNative("OUT", row), false);
+	setTimecodeNative("IN", 0, getTimecodeNative("IN", row), false);
+	setTimecodeNative("OUT", 0, getTimecodeNative("IN", row) + halfWayPoint, false);
 	setSubtitle(0, getSubtitle(row), false);
 
 	// turn off the checkbox
 	document.getElementById("BOX"+row).checked="";
 		
-	setTimecodeNative("OUT", row, getTimecodeNative("IN", row) + halfWayPoint, true, true);
-	addSub(row, true, true);
+	setTimecodeNative("IN", row, getTimecodeNative("IN", row) + halfWayPoint, false, false);
+	
+	// TODO FIX!
+	createUndoState("CR", row, true);
+	addSub(row, true, true);	
 	createUndoState("ENDAPPEND", 0, true);	
 
 	
 	// Restore backups
-	setTimecode("IN", 0, tempIn);
-	setTimecode("OUT", 0, tempOut);
-	setSubtitle(0, tempSub);
+	setTimecode("IN", 0, tempIn, false);
+	setTimecode("OUT", 0, tempOut, false);
+	setSubtitle(0, tempSub, false);
 	
+	forceDraw();	
 }
 
 function shiftSub(event) {
@@ -1237,7 +1234,6 @@ function shiftSub(event) {
 
 	var curIn=getTimecodeNative("IN",row);
 	var curOut=getTimecodeNative("OUT",row);
-	console.log("curIn: " + curIn + " curOut: " + curOut);
 	
 	var oldIn=document.getElementById("IN" + row).getAttribute("beforeSlide");
 	var oldOut=document.getElementById("OUT" + row).getAttribute("beforeSlide");
@@ -1297,8 +1293,11 @@ function shiftSubFinalize(event) {
 		setTimecodeNative("OUT", row, oldOut, false, false);
 	} else { 
 		// Set an undoState for the original value
+		createUndoState("CR", row, true);
 		setTimecodeNative("IN", row, oldIn, false, false);
-		setTimecodeNative("OUT", row, oldOut, true, false);	
+		setTimecodeNative("OUT", row, oldOut, false, false);	
+		createUndoState("CU", row, true);
+		createUndoState("ENDAPPEND", 0, true);	
 		
 		// Set back to the new values
 		setTimecodeNative("IN", row, curIn, false, false);
@@ -1414,11 +1413,12 @@ function fromTableRowIndex_getSplitSub(table, row) {
 }
 
 function rewind() {
-	// Updated to allow you to rapidly hit tab to seek back multiple in points.
 	var videoTag = document.getElementById("video");
 	var time=videoTag.currentTime;
 	
-	var index=getClosestPointFromTime("IN", time, false, 1.0);
+	// If the playhead is within 0.25 seconds of the IN point then it goes to the previous one instead
+	//	This way you can rapidly rewind() backwards through every IN point
+	var index=getClosestPointFromTime("IN", time, false, 0.25);
 	if (index != -1) {
 		videoTag.currentTime=getTimecodeNative("IN", index);
 	}
@@ -1542,9 +1542,21 @@ function dragWaveform(event) {
 
 function processKeyboardInput(event) {
 	resetStatus();
+	
+	// Keep track of what modifier keys are up/down for the slider controls so they know to only modify IN or OUT points	
 	var videoTag=document.getElementById("video");
+	if (event.shiftKey == true || event.keyCode == 16)
+		videoTag.setAttribute("shiftKey", "true");
+	if (event.ctrlKey == true || event.keyCode == 17)
+		videoTag.setAttribute("ctrlKey", "true");				
+	if (event.altKey == true || event.keyCode == 18)
+		videoTag.setAttribute("altKey", "true");	
+	if (event.keyCode == 91) // Windows key or Mac Command key
+		videoTag.setAttribute("metaKey", "true");
+
 	switch(event.keyCode) {
-		case 9: processTab(event); 			break;
+		case 9: processTab(event);			break;
+		case 192:processTilde(event);		break;
 		case 13: processEnter(event); 		break;
 		
 		case 38: processUpArrow(event); 	break;
@@ -1553,18 +1565,26 @@ function processKeyboardInput(event) {
 		case 37: processLeftArrow(event);	break;
 		case 39: processRightArrow(event);	break;
 		
+		case 33: // metaKey + PageUp
+			if (videoTag.getAttribute("metaKey") != "true")
+				break;
+		case 113: // F2
+			undo(); 
+			break;
+		case 34: // metaKey + PageDown
+			if (videoTag.getAttribute("metaKey") != "true")
+				break;
+		case 114: // F3
+			redo(); 
+			break;
+			
 		case 112: // F1 Key
 			if (document.getElementById("instructionsContainer").style.display == "block")
 		 		hideInstructions(); 
 		 	else 
 		 		showInstructions();
 		 	break; 
-		
-		case 113: 
-			undo(); break;
-		case 114:
-			redo(); break;
-				
+	
 		case 27: // Escape key
 			if (videoTag.paused)
 				videoTag.play();
@@ -1585,15 +1605,7 @@ function processKeyboardInput(event) {
 			}
 			break;			
 	}
-	
-	// Keep track of what modifier keys are up/down for the slider controls so they know to only modify IN or OUT points
-	var videoTag=document.getElementById("video");
-	if (event.shiftKey == true)
-		videoTag.setAttribute("shiftKey", "true");	
-	if (event.altKey == true)
-		videoTag.setAttribute("altKey", "true");
-	if (event.keyCode == 91) // Windows key or Mac Command key
-		videoTag.setAttribute("metaKey", "true");
+
 	forceDraw();	
 }
 function processKeyboardInputKeyUp(event) {
@@ -1601,6 +1613,8 @@ function processKeyboardInputKeyUp(event) {
 	switch(event.keyCode) {
 		case 16: // Shift key up
 			videoTag.setAttribute("shiftKey", "false");	break;
+		case 17: // Control key up
+			videoTag.setAttribute("ctrlKey", "false");	break;			
 		case 18: // Alt Key Up
 			videoTag.setAttribute("altKey", "false");	break;
 		case 91:
@@ -1612,52 +1626,59 @@ function processTab(event) {
 	// If we're not in IN0, OUT0, or SUB0 then TAB shouldn't do anything but the normal behavior
 	if ( document.getElementById("currentInput").contains(document.activeElement) == false)
 			return;
-		
-	// Prevent TAB for jumping out of the currentSubtitle input
-	if (document.activeElement == document.getElementById("SUB0")) 
-		event.preventDefault();
-		
+			
+	if (document.activeElement == document.getElementById("SUB0")) {
+		event.preventDefault();	
+		rewind();		
+	}
+}
+function processTilde(event) {	
 	var videoTag = document.getElementById("video");
 	if (videoTag.readyState != 4) {
 		updateStatusMessage("No video file loaded!");
 		return;
 	}
 	
-	if (event.altKey==true) {
+	if (videoTag.getAttribute("altKey") == "true") {
+		event.preventDefault();	
 		setTimecode("IN", 0, "");
-		return;
-	}
-
-	if (getTimecode("IN", 0) == "") {
+	} else if (videoTag.getAttribute("ctrlKey") == "true") {
+		event.preventDefault();		
 		setTimecode("IN", 0, document.getElementById("currentTimecode").innerHTML);
-		return;
-	}
-	else 
-		rewind();
+		console.log("setting");
+	} 
+	
+	forceDraw();	
 }
 function processEnter(event) {
-	// If we're not in IN0, OUT0, or SUB0 then TAB shouldn't do anything but the normal behavior
-	if ( document.getElementById("currentInput").contains(document.activeElement) == false)
-			return;
-			
-	// Prevent ENTER from adding a newline to SUB0 
-	if (document.activeElement == document.getElementById("OUT0")) 
-		event.preventDefault();
-		
 	var videoTag = document.getElementById("video");
 	if (videoTag.readyState != 4) {
 		updateStatusMessage("No video file loaded!");
 		return;
 	}
 	
-	// CTRL + ENTER clears the OUT point
-	if (event.altKey==true) {
+	// ALT + ENTER clears the OUT point
+	if (videoTag.getAttribute("altKey") == "true") {
 		event.preventDefault();
 		setTimecode("OUT", 0, "");
+		forceDraw();
 		return;
 	}	
 
-	// 
+	// CLTR + ENTER sets the OUT Point to current time
+	if (videoTag.getAttribute("ctrlKey") == "true") {
+		event.preventDefault();		
+		setTimecode("OUT", 0, document.getElementById("currentTimecode").innerHTML);
+		forceDraw();
+		return;		
+	}
+	
+	// If we're not in IN0, OUT0, or SUB0 then TAB shouldn't do anything but the normal behavior
+	if ( document.getElementById("currentInput").contains(document.activeElement) == false)
+			return;
+		
+	// If the user does SHIFT + ENTER we just add a new line. 
+	//	Otherwise add a new sub (or just set an OUT point if it's not set)
 	if (event.shiftKey==false) {
 		// Prevent SHIFT+ENTER from adding a newline in the currentSubtitle input
 		if (document.activeElement == document.getElementById("SUB0")) 
@@ -1682,15 +1703,16 @@ function processEnter(event) {
 			return;
 		}
 	
-		createUndoState("C", 0, true, true);
+		createUndoState("CU", 0, true, true);
 		addSub(-1, true, true);
+		createUndoState("CR", 0, true, true);		
 		createUndoState("ENDAPPEND", 0, true);		
 	}
 }
 function processUpArrow(event) {
 	var videoTag=document.getElementById("video");
 	// If the user isn't holding down META or SHIFT when hitting an arrow then we are ignoring the input
-	if (videoTag.getAttribute("shiftKey") != "true" && videoTag.getAttribute("metaKey") != "true")
+	if (videoTag.getAttribute("altKey") != "true" && videoTag.getAttribute("metaKey") != "true")
 		return
 		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
@@ -1721,7 +1743,7 @@ function processUpArrow(event) {
 		setTimecode("OUT", index, newTime );
 		
 		// If the previous IN point time was the same as the OUT point we just moved let's also adjust it
-		if (event.shiftKey==false) {
+		if (videoTag.getAttribute("metaKey") == "true") {
 			var oIndex=getIndexFromTimecode("IN", oldTime);
 			if (oIndex != -1 ) {
 				setTimecode("IN", oIndex, newTime); 
@@ -1738,7 +1760,7 @@ function processUpArrow(event) {
 function processDownArrow(event) {
 	var videoTag=document.getElementById("video");
 	// If the user isn't holding down META or SHIFT when hitting an arrow then we are ignoring the input
-	if (videoTag.getAttribute("shiftKey") != "true" && videoTag.getAttribute("metaKey") != "true")
+	if (videoTag.getAttribute("altKey") != "true" && videoTag.getAttribute("metaKey") != "true")
 		return
 		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
@@ -1769,7 +1791,7 @@ function processDownArrow(event) {
 		setTimecode("IN", index, newTime );
 		
 		// If the previous OUT point time was the same as the IN point we just moved let's also adjust it
-		if (event.shiftKey==false) {
+		if (videoTag.getAttribute("metaKey") == "true") {
 			var oIndex=getIndexFromTimecode("OUT", oldTime);
 			if (oIndex != -1 ) {
 				setTimecode("OUT", oIndex, newTime); 
