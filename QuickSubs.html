@@ -27,7 +27,7 @@ not, see http://www.gnu.org/licenses/.
 <body>
 	<div id="instructionsContainer">	
 		<div id="instructionsTop">
-			<button class="instructionsButton" onclick="hideInstructions();">Close Instructions</button>
+			<button class="instructionsButton" id="hideInstructions">Close Instructions</button>
 			<a href="http://quicksubtitles.sourceforge.net/" target="_blank"><button class="instructionsButton">Visit Home Page</button></a>
 			<h3>If you find this tool useful please consider donating to support future revisions.</h3>	
 			<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
@@ -620,23 +620,23 @@ not, see http://www.gnu.org/licenses/.
 				<div id="upperControls">
 					<fieldset class="controlWrapper">
 						<legend>Instructions</legend>
-							<button onclick="showInstructions();">Get Help</button>
+							<button id="showInstructions">Get Help</button>
 					</fieldset>		
 
 					<fieldset class="controlWrapper controlWrapperShrink">
 						<legend>Load Video</legend>
 						<input type="file" class="custom-file-input" id="loadVideo" accept="*"/>
-						<button onclick="document.getElementById('loadVideo').click();"/>Choose File</button>				
+						<button id="BTNvideoLoad">Choose File</button>				
 					</fieldset>
 					<fieldset class="controlWrapper controlWrapperShrink">
 						<legend>Load Subtitles</legend>
 						<input type="file" class="custom-file-input" id="loadSubtitles" accept=".srt"/>
-						<button onclick="document.getElementById('loadSubtitles').click();"/>Choose File</button>												
+						<button id="BTNsubtitleLoad">Choose File</button>												
 					</fieldset>
 					<fieldset class="controlWrapper">
 						<legend>Arrow Keys</legend>
 						<div>
-							<button id="toggleArrows" onclick="toggleArrows();">OFF</button>
+							<button id="toggleArrows">OFF</button>
 						</div>
 					</fieldset>	
 																	
@@ -657,7 +657,7 @@ not, see http://www.gnu.org/licenses/.
 					<table>
 						<tbody>
 							<tr>
-								<th class="checkbox"> <input id="selectAllCheckbox" type="checkbox" onclick="selectAll(this)"/> </th>
+								<th class="checkbox"> <input id="selectAllCheckbox" type="checkbox"/> </th>
 								<th class="timecode"> In Point </th>
 								<th class="timecode"> Out Point </th>
 								<th class="subtitle"> Subtitle Text </th>
@@ -707,43 +707,58 @@ not, see http://www.gnu.org/licenses/.
 			</div>
 				
 			<div class="bottomColumn">
+				<fieldset class="controlWrapper" style="width:97%; padding-bottom: 10px; padding:0px; padding-top:3px;">
+					<legend>It is strongly recommend you not use this top row buttons and instead learn the hotkeys!!!!</legend>
+					<div style="background-color:red;height: 25px;">	
+							<button id="BTNsetInPoint">Set In Point</button>
+							<button id="BTNsetOutPoint">Set Out Point</button>
+							<button id="BTNaddSubtitle">Add Subtitle</button>						
+							<button id="BTNclearInPoint">Clear In Point</button>						
+							<button id="BTNclearOutPoint">Clear Out Point</button>
+					</div>
+				</fieldset>
 				<fieldset class="controlGroup">
 					Font Color:
-					<input type="color" id="fontColor" onchange="document.getElementById('overlaySubtitle').style.color=this.value";>
+					<input type="color" id="fontColor">
 					Background Color: 
-					<input type="color" id="bgColor" onchange="document.getElementById('overlaySubtitle').style.backgroundColor=this.value";>
+					<input type="color" id="bgColor">
 					Font Size:
-					<input type="text" id="fontSize" class="timecodeInput" onchange="updateFontSize(this.value);">
+					<input type="text" id="fontSize" class="timecodeInput">
 					Opacity:
-					<input type="text" id="fontOpacity" class="timecodeInput" onchange="updateFontOpacity(this.value);">
+					<input type="text" id="bgOpacity" class="timecodeInput">
 				</fieldset>	
 							
-				<fieldset class="controlWrapper">
+				<fieldset class="controlWrapper" style="min-width: 300px;">
 					<legend>Playback Speed</legend>
-					50%
-					<input type="range" id="playRate" min="-5" max="5" value="0" step="1" onchange="changePlayRate(this.value);"/> 150%
+					<input type="range" id="playRate" min="-5" max="5" value="0" step="1"/>
+					<span id="currentSpeed" style="margin-right:10px; margin-left: 15px">Current Speed: 100%</span>
 				</fieldset>	
 									
 				<fieldset class="controlWrapper">
 					<legend>Save Project</legend>
-					<button id="saveSubtitles" onclick="saveSRTFile();">Save Subtitles</button>
-					<button id="exportSubtitles" onclick="exportSTL();">Export STL File</button>
-				</fieldset>
-				<fieldset class="controlWrapper">
-					<legend>Delete Selected Subs</legend>
-					<button id="deleteSubs" onclick="deleteSubs();"/>Delete Subtitles</button>
-				</fieldset>
-								
-				<fieldset class="controlWrapper">
-					<legend>Adjustments (In Seconds) To Selected</legend>
-					<input type="Button" value="Apply Offset To:" onclick="offsetSubs();"/>
-					<select id="offsetType">
-						<option value="IN">In Points</option>
-						<option value="OUT">Out Points</option>
-						<option value="BOTH">Both</option>
+					<button id="saveSubtitles">Save Subtitles</button>
+					<button id="exportSubtitles">Export STL File</button>
+					<select id="STLMode">
+						<option>NTSC</option>
+						<option>PAL</option>
 					</select>
-					<input type="text" class="timecodeInput" id="offsetAmount" value="0.0"/>
+				</fieldset>
+							
+				<fieldset class="controlWrapper">
+					<legend>Time Adjustments To Selected Subtitles</legend>
+					<button id="BTNappyOffet">Apply Offset To:</button>
+					<select id="offsetType">
+						<option value="BOTH">Both In and Out</option>					
+						<option value="IN">In Points Only</option>
+						<option value="OUT">Out Points Only</option>
+					</select>
+					<input type="text" style="width: 4em;" id="offsetAmount" value="0.0"/>
+					Seconds
 				</fieldset>	
+				<fieldset class="controlWrapper">
+					<legend>Delete Selected Subtitles</legend>
+					<button id="deleteSubs">Delete</button>
+				</fieldset>		
 			</div>	
 								
 		</div>

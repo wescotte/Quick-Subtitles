@@ -1,0 +1,70 @@
+2014/10/20 Version 0.95 Released
+			Ensured list of subtitles stay in chronological as before new subtitles were just inserted at the end
+			Modified arrow key functionality to require modifier keys this way “Enable Arrows” can be on by default
+				and doesn’t interfere with normal usage nearly as much.
+			Added undo/redo functionality 
+			Added PAL support for STL export
+			Added buttons for setting/clearing IN/OUT points and adding subtitles.
+			Modified Hotkeys -- See instructions for entire list
+			Cleaned up UI
+			Refactored all HTML onchange/onclick code to use event listeners in init() function.	
+		
+
+2014/10/04 Version 0.94 Released
+			Fixed bug in updateID()
+				Forgot to update SHIFT and SPLIT id tags so after splitting or deleting a row it could get out of sync and the
+				buttons would perform actions on the wrong rows.
+
+2014/10/03 Version 0.93 Released
+			Added waveform preview
+			Added ability to scrub video via waveform
+			Modified UI to better accommodate a waveform preview
+			Added processKeyboardInputKeyUp(event) function to enable SHIFT/ALT keys to work with "Shift Sub" to isolate IN or OUT points only
+
+2014/09/22
+			Added "Split Sub" functionality which breaks a subtitle into two new subtitles each half the length of the original
+			Added "Shift Sub" functionality which allows the user to shift a subtitle +/- 1.5 seconds in 25ms increments.
+			Added setTimecodeNative(type, row, newValue) function
+			Refactor: 
+				Created function updateIDs() which was code taken from deleteSubs() because this code is also needed by "Split Sub"
+				Dropped function processOtherKeystrokes() and instead moved functionality to added a "input" handler on "SUB0" 
+				Dropped function function updateTimecodeValue(node, newValue) because function setTimecode(type, row, newValue) did the same thing
+				function addSub() modified to addSub(insertAfter) to reuse code for "Split Sub" functionality
+					Only change was instead of allows adding to the end you can add to the table after row
+					
+2014/09/18 Version 0.92 Released
+			Added "Arrow Keys" functionality. Toggle by SHIFT + SPACEBAR
+				When "Off" Arrow keys function as normal on the active element. For example in a <textarea> you can navigate the cursor.
+				When "On" those behaviors are being overwritten by so that LEFT and RIGHT arrows go previous/next subtitles
+					UP/DOWN arrows adjust IN and OUT points based on playhead.
+				NOTE: When "Off" you can still use the arrow keys but you have to click outside the main window so no buttons/inputs are active
+			
+			Modified: Help screen layout
+			
+			I should probably just start using GIT already...
+			Modified: loadSRTFile() 
+				Fixed a bug where files with carriage returns + newlines weren't being loaded properly.
+			
+			Refactor: Globals to use better naming convention of UPPER_CASE_WITH_UNDERSCORES
+				currentRow ->  CURRENT_ROW  & lastBox -> LAST_BOX & displayingSubOutPoint -> DISPLAYING_SUB_OUT_POINT
+			
+			Modified: deleteSubs() 
+				--Allowed it to exit early if you don't actually delete anything
+				--If any subtitles were actually deleted call resetDisplayedSubtitle() in case the sub currently being displayed no longer exists.
+				--Fixed bug where the subtitle count was off by one after deletion.
+					replaced: CURRENT_ROW=table.rows.length;
+					with: CURRENT_ROW=table.rows.length + 1; 
+					removed: 
+							if (CURRENT_ROW == 0)	
+								CURRENT_ROW=1;
+	
+				
+2014/09/15 - Version 0.91 Released
+			Modified: SaveSRTFile() to prompt user for filename
+			Added: Functionality to export to STL file (NTSC only right now)
+			Added: Functionality to change subtitle preview text color, background color, font size, and opacity
+			Modified: Misc cleanup changing several <input type="button"> to <button>
+			Modified: Slightly altered the behavior of TAB and ENTER so they only function when IN0, OUT0, or SUB0 is active.
+			Modified UI - Right side added a bit more vertical space for "Status Messages"
+			
+2014/09/09 - Version 0.90 Released

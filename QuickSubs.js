@@ -84,37 +84,40 @@ function init() {
 	setupUndoBuffer();
 	// By default arrow keys are enabled
 	toggleArrows();
-      
-	playSelectedFile = function playSelectedFileInit(event) {
-		var file = this.files[0];
-		if(typeof(file)==='undefined') {
-			updateStatusMessage("Warning: Unable to load file.");
-			return;
-		}
-		
-		var type = file.type;		
-		var videoNode = document.querySelector('video');
-		var canPlay = videoNode.canPlayType(type);
-		canPlay = (canPlay === '' ? ' Your browser does not support this video format.' : canPlay);
-		var message = type + ':' + canPlay;
-		var isError = canPlay === 'This format is not supported';
-		updateStatusMessage(message);
-		if (isError) {
-			return;
-		}
-			
-		var fileURL = URL.createObjectURL(file);
-		videoNode.src = fileURL;
-		
-		var videoTag = document.getElementById("video");
-		var timeTag = document.getElementById('currentTimecode');
-		videoTag.addEventListener('timeupdate',processTimeUpdate);
-		videoTag.addEventListener('play', resetDisplayedSubtitle);
-		videoTag.addEventListener('seeked', resetDisplayedSubtitle);
+	
+	// Setup all the event listeners
+	
+	// Setup Buttons
+	document.getElementById("showInstructions").addEventListener("click", showInstructions);
+	document.getElementById("hideInstructions").addEventListener("click", hideInstructions);		
 
-		// We have to ensure the video is actually loaded before we should generate a waveform
-		setTimeout(checkReady, 500);			
-	}
+	document.getElementById("saveSubtitles").addEventListener("click", saveSRTFile);
+	document.getElementById("exportSubtitles").addEventListener("click", exportSTL);	
+
+	document.getElementById("BTNvideoLoad").addEventListener("click", 
+		function() { var event = new Event("click"); document.getElementById('loadVideo').dispatchEvent(event); }
+	);
+	document.getElementById("BTNsubtitleLoad").addEventListener("click", 
+		function() { var event = new Event("click"); document.getElementById('loadSubtitles').dispatchEvent(event); }
+	);	
+		
+	document.getElementById("toggleArrows").addEventListener("click", toggleArrows);	
+	document.getElementById("BTNappyOffet").addEventListener("click", offsetSubs);	
+	document.getElementById("deleteSubs").addEventListener("click", deleteSubs);		
+	document.getElementById("selectAllCheckbox").addEventListener("click", selectAll);						
+					
+	document.getElementById("BTNsetInPoint").addEventListener("click", BTNsetInPoint);
+	document.getElementById("BTNsetOutPoint").addEventListener("click", BTNsetOutPoint);
+	document.getElementById("BTNclearInPoint").addEventListener("click", BTNclearInPoint);
+	document.getElementById("BTNclearOutPoint").addEventListener("click", BTNclearOutPoint);	
+	document.getElementById("BTNaddSubtitle").addEventListener("click", BTNaddSubtitle);	
+	
+	document.getElementById("playRate").addEventListener("change", changePlayRate);
+	document.getElementById("fontSize").addEventListener("change", updateFontSize);
+	document.getElementById("fontColor").addEventListener("change", updateFontColor);
+	document.getElementById("bgOpacity").addEventListener("change", updateFontBackgroundOpacity);	
+	document.getElementById("bgColor").addEventListener("change", updateFontBackgroundColor);
+	
 	
 	// Setup the font settings values
 	var overlay=document.getElementById("overlaySubtitle");
@@ -124,7 +127,7 @@ function init() {
 	var fontSize=style.getPropertyValue("font-size");
 	fontSize=fontSize.replace("px", "");
 	document.getElementById("fontSize").value=fontSize;
-	document.getElementById("fontOpacity").value=parseFloat(style.getPropertyValue("opacity")).toFixed(2);
+	document.getElementById("bgOpacity").value=parseFloat(style.getPropertyValue("opacity")).toFixed(2);
 		
 	var loadVideo = document.getElementById('loadVideo');
 	var loadSubtitles = document.getElementById("loadSubtitles");
@@ -135,7 +138,7 @@ function init() {
 		updateStatusMessage('Your browser is not ' + 
 						'<a href="http://caniuse.com/bloburls">supported</a>!');
 	} else {    
-		loadVideo.addEventListener('change', playSelectedFile, false);
+		loadVideo.addEventListener('change', playSelectedFileInit, false);
 		loadSubtitles.addEventListener('change', loadSRTFile, false);	
 		document.addEventListener('keydown', processKeyboardInput);
 		document.addEventListener('keyup', processKeyboardInputKeyUp);
@@ -150,6 +153,89 @@ function init() {
 		
 		document.getElementById("waveformPreview").addEventListener("mousemove", dragWaveform);						
 	}
+}
+function playSelectedFileInit(event) {
+	var file = this.files[0];
+	if(typeof(file)==='undefined') {
+		updateStatusMessage("Warning: Unable to load file.");
+		return;
+	}
+	
+	var type = file.type;		
+	var videoNode = document.querySelector('video');
+	var canPlay = videoNode.canPlayType(type);
+	canPlay = (canPlay === '' ? ' Your browser does not support this video format.' : canPlay);
+	var message = type + ':' + canPlay;
+	var isError = canPlay === 'This format is not supported';
+	updateStatusMessage(message);
+	if (isError) {
+		return;
+	}
+		
+	var fileURL = URL.createObjectURL(file);
+	videoNode.src = fileURL;
+	
+	var videoTag = document.getElementById("video");
+	var timeTag = document.getElementById('currentTimecode');
+	videoTag.addEventListener('timeupdate',processTimeUpdate);
+	videoTag.addEventListener('play', resetDisplayedSubtitle);
+	videoTag.addEventListener('seeked', resetDisplayedSubtitle);
+
+	// We have to ensure the video is actually loaded before we should generate a waveform
+	setTimeout(checkReady, 500);			
+}
+
+function BTNsetInPoint(event) {
+	var videoTag = document.getElementById("video");
+	if (videoTag.readyState != 4) {
+		updateStatusMessage("No video file loaded!");
+		return;
+	}
+	
+	setTimecode("IN", 0, document.getElementById("currentTimecode").innerHTML);
+	
+	forceDraw();
+}
+function BTNsetOutPoint(event) {
+	var videoTag = document.getElementById("video");
+	if (videoTag.readyState != 4) {
+		updateStatusMessage("No video file loaded!");
+		return;
+	}
+	
+	setTimecode("OUT", 0, document.getElementById("currentTimecode").innerHTML);
+	
+	forceDraw();
+}
+function BTNclearInPoint(event) {
+	setTimecode("IN", 0, "");
+	forceDraw();	
+}
+function BTNclearOutPoint(event) {
+	setTimecode("OUT", 0, "");
+	forceDraw();	
+}
+function BTNaddSubtitle(event) {
+		var currentIn=getTimecode("IN", 0);
+		var currentOut=getTimecode("OUT", 0);
+		
+		if (currentIn != "" && validTimecode(currentIn) == false) {
+			updateStatusMessage("Invalid Timecode in your current IN point");
+			return;
+		}			
+		if (currentOut != "" && validTimecode(currentOut) == false) {
+			updateStatusMessage("Invalid Timecode in your current OUT point");
+			return;
+		}		
+	
+		var tempOut=getTimecode("OUT", 0);
+		createUndoState("STARTAPPEND", 0, true);			
+		createUndoState("CU", 0, true, true);
+		addSub(-1, true, true);
+		// TODO: Add a flag so the user can enable/disable automatically setting this IN point after adding a subtitle
+		setTimecode("IN", 0, tempOut, false);	
+		createUndoState("CR", 0, true, true);		
+		createUndoState("ENDAPPEND", 0, true);	
 }
 
 function setupUndoBuffer() {
@@ -171,8 +257,10 @@ function createUndoState(type, row, appendState) {
 		undoBuffer=undoBuffer.splice(0,undoPosition+2);	
 	}
 
-	if (undoBuffer[undoPosition] == null || appendState == false) {
+	if (undoBuffer[undoPosition] == null || appendState == false || type == "STARTAPPEND") {
 		undoBuffer[undoPosition]=new Array();
+		if (type == "STARTAPPEND")
+			return;
 	}
 
 	// This is because the addSub undoState is initially created using a row <tr>...</tr> contents rather than the custom object
@@ -199,6 +287,8 @@ function rebuildBuffer() {
 	var IN, OUT, SUB;
 	var table=document.getElementById("subtitles");
 
+	updateIDs();
+	
 	for (var i=0; i < undoBuffer[undoPosition].length; i++) {
 		if (undoBuffer[undoPosition][i].type == "REBUILD") {
 			var rowIndex=undoBuffer[undoPosition][i].row.rowIndex;
@@ -305,6 +395,8 @@ function undoChange(data) {
 	setSubtitle(data.row, data.subtitle, false);
 }
 function undoAdd(data) {
+	if (document.getElementById("ROW"+data.row) == null)
+		console.log(data);
 	var table=document.getElementById("subtitles");
 	var row=document.getElementById("ROW"+data.row).rowIndex;
 	table.deleteRow(row);	
@@ -373,7 +465,10 @@ function loadSRTFile() {
 		
 		// Clear the current subtitle so it's not appended to the first sub we load
 		setSubtitle(0, "", false, false);
-			
+		
+		// Start the Undo Buffer State
+		createUndoState("STARTAPPEND", 0, true);	
+					
 		for (var l in lines) {
 			line=lines[l];
 			counter++;
@@ -549,8 +644,13 @@ function exportSTL(event) {
 	
 }
 function calcSTLFrame(time) {
-	// TODO: Allow user to specify other frame rates but for now default to NTSC
-	const oneFrame = 1000/(30000/1001);
+	var FPS;
+	if (document.getElementById("STLMode").value == "PAL")
+		FPS=25000;
+	else
+		FPS=30000;
+		
+	var oneFrame = 1000/(FPS/1001);
 	
 	return pad(Math.floor(time / oneFrame), 2);
 }
@@ -727,19 +827,41 @@ function makeColorFromString(str) {
 	b = "#"+b.join("");
 	return b;
 }
-function updateFontSize(s) {
+function updateFontSize(event) {
+	var s=document.getElementById("fontSize").value;
+	
 	if (isNaN(s) || s < 0) {
 		updateStatusMessage("Invalid font size.. Value must be greater than 0");
 	} else {
 		document.getElementById("overlaySubtitle").style.fontSize = s + "px";
 	}
 }
-function updateFontOpacity(o) {
+function updateFontColor(event) {
+	document.getElementById("overlaySubtitle").style.color=event.target.value;
+}
+function updateFontBackgroundOpacity(event) {
+	var o = document.getElementById("bgOpacity").value;
+	
 	if (isNaN(o) || (o < 0.0 || o > 1.0)) {
 		updateStatusMessage("Invalid opacity... Must be greater than 0.0 >= opacity <= 1.0");
 	} else {
-		document.getElementById("overlaySubtitle").style.opacity = o;
+		//document.getElementById("overlaySubtitle").style.opacity = o;
 	}
+	
+	var event = new Event('change');
+	document.getElementById("bgColor").dispatchEvent(event);
+}
+function updateFontBackgroundColor(event) {
+	var color=event.target.value;
+	
+	console.log(color);
+	var r = parseInt(color.substr(1,2), 16);
+	var g = parseInt(color.substr(3,2), 16);
+	var b = parseInt(color.substr(5,2), 16);
+	
+	var colorString="rgba(" + r + "," + g + ","	+ b + "," + document.getElementById("bgOpacity").value + ")";
+	console.log(colorString);
+	document.getElementById('overlaySubtitle').style.backgroundColor=colorString;
 }
 
 function updateOverlayText(newValue) {
@@ -1142,8 +1264,6 @@ function addSub(insertAt, createUndo, appendUndoState) {
 			insertPoint=document.getElementById("ROW" + insertAt);
 			
 		table.insertBefore(row, insertPoint);	
-		// Since we are inserting in the middle of the table we need to update all the IDs
-		//updateIDs();
 	}
 	CURRENT_ROW++;
 
@@ -1151,7 +1271,7 @@ function addSub(insertAt, createUndo, appendUndoState) {
 		createUndoState("REBUILD", row, appendUndoState);
 	}
 
-	setTimecode("IN", 0, outPoint, false);		
+	setTimecode("IN", 0, "", false);		
 	setTimecode("OUT", 0, "", false);
 	setSubtitle(0, "", false);
 }
@@ -1162,6 +1282,9 @@ function deleteSubs(event) {
 	// Start at 1 because 0 is the user input row
 	for (var i=1; i < CURRENT_ROW; i++) {
 		if (document.getElementById("BOX"+i).checked) {
+			// We only want to start the undoBuffer once...
+			if (numberDeleted == 0)
+				createUndoState("STARTAPPEND", 0, true);	
 			createUndoState("R", i, true);
 			table.deleteRow(document.getElementById("ROW"+i).rowIndex);
 			numberDeleted++;
@@ -1171,16 +1294,8 @@ function deleteSubs(event) {
 	// If we didn't actually delete anything here is no reason to update the table ID values
 	if (numberDeleted == 0)
 		return;
-		
-	nextUndoState();
 	
-	/* Reset index values to ensure random access via document.getElementById("IN" + index) still function. Otherwise we might have gaps
-		and if you loop from 0 to CURRENT_ROW document.getElementById("IN" + index) might be null. 
-	
-		So when we erase rows we just remove the gaps so everything else functions normally and we don't have to constantly check that
-		references exist because we ensure they do.
-	*/
-	// updateIDs();
+	createUndoState("ENDAPPEND", 0, true);	
 	
 	// Never actually 0 because we always count our data entry line
 	CURRENT_ROW=table.rows.length + 1;
@@ -1203,21 +1318,21 @@ function splitSub(event) {
 	var tempSub=getSubtitle(0);
 	
 	// Create a undo state for the original IN/OUT length
+	createUndoState("STARTAPPEND", 0, true);		
 	createUndoState("CU", row, true);
 	
 	var halfWayPoint=(getTimecodeNative("OUT", row) - getTimecodeNative("IN", row)) / 2;
-	setTimecodeNative("IN", 0, getTimecodeNative("IN", row), false);
-	setTimecodeNative("OUT", 0, getTimecodeNative("IN", row) + halfWayPoint, false);
+	setTimecodeNative("IN", 0, getTimecodeNative("IN", row) + halfWayPoint, false);
+	setTimecodeNative("OUT", 0, getTimecodeNative("OUT", row), false);
 	setSubtitle(0, getSubtitle(row), false);
 
 	// turn off the checkbox
 	document.getElementById("BOX"+row).checked="";
 		
-	setTimecodeNative("IN", row, getTimecodeNative("IN", row) + halfWayPoint, false, false);
+	setTimecodeNative("OUT", row, getTimecodeNative("IN", row) + halfWayPoint, false, false);
 	
-	// TODO FIX!
-	createUndoState("CR", row, true);
-	addSub(row, true, true);	
+	createUndoState("CR", row, true);	
+	addSub(-1, true, true);	
 	createUndoState("ENDAPPEND", 0, true);	
 
 	
@@ -1293,6 +1408,7 @@ function shiftSubFinalize(event) {
 		setTimecodeNative("OUT", row, oldOut, false, false);
 	} else { 
 		// Set an undoState for the original value
+		createUndoState("STARTAPPEND", 0, true);			
 		createUndoState("CR", row, true);
 		setTimecodeNative("IN", row, oldIn, false, false);
 		setTimecodeNative("OUT", row, oldOut, false, false);	
@@ -1341,9 +1457,11 @@ function offsetSubs() {
 		return;
 	}
 	
+	var shiftCount=0;
 	// Step 1: Make sure the offsets don't push any values outside of the video range
 	for (var i=1; i < CURRENT_ROW; i++) {
 		if (document.getElementById("BOX"+i).checked) {
+			shiftCount++;
 			if (applyTo == "IN" || applyTo == "BOTH") {
 				newValue=getTimecodeNative("IN", i) + amount;
 				if (newValue < 0 || newValue > limit) {
@@ -1370,22 +1488,33 @@ function offsetSubs() {
 		return;		
 	}
 	
+	// Nothing to do so no reason to do the next loop
+	if (shiftCount == 0)
+		return;
+		var tempOut=getTimecode("OUT", 0);
+					
+	createUndoState("STARTAPPEND", 0, true);	
+		
 	// Step 2: Make the changes to the timecode
 	for (var i=1; i < CURRENT_ROW; i++) {
 		if (document.getElementById("BOX"+i).checked) {
+		
+			createUndoState("CU", i, true);
+			
 			if (applyTo == "IN" || applyTo == "BOTH") {
 				newValue=convertTC_NativetoSRT(getTimecodeNative("IN", i) + amount);
-				setTimecode("IN", i, newValue, true, true);
+				setTimecode("IN", i, newValue, false, false);
 			}
-			problemRows += "\n";
 			if (applyTo == "OUT" || applyTo == "BOTH") {
 				newValue=convertTC_NativetoSRT(getTimecodeNative("OUT", i) + amount);
-				setTimecode("OUT", i, newValue,true, true);			
+				setTimecode("OUT", i, newValue, false, false);			
 			}	
+			
+			createUndoState("CR", i, true);
 		}
 	}	
 	
-	nextUndoState();
+	createUndoState("ENDAPPEND", 0, true);	
 	forceDraw();	
 }
 
@@ -1426,20 +1555,33 @@ function rewind() {
 		videoTag.currentTime=0;	
 }
 
-function changePlayRate(rate) {
+function changePlayRate() {
 	var videoTag = document.getElementById("video");
+	var tag=document.getElementById("playRate")
+	if (videoTag.readyState != 4) {
+		updateStatusMessage("No video file loaded!");
+		tag.value=0;
+		return;
+	}	
+	var rate=tag.value;
 	
+	var newRate=1+(.1*rate);	
 	// Adjust by 10% speed for each step
-	videoTag.playbackRate=1+(.1*rate);	
+	videoTag.playbackRate=newRate;
+	
+	var asPercentage=Math.round(newRate*100);
+	
+	document.getElementById("currentSpeed").innerText="Current Speed:" + asPercentage + "%";
 }
 
-function selectAll(checkBox) {
-		var state=checkBox.checked;
-		
-		var table=document.getElementById("subtitles");
-		for (var i=0; i < table.rows.length; i++) {
-			fromTableRowIndex_getCheckbox(table,i).checked=state;
-		}	
+function selectAll(event) {
+	var checkBox=event.target;
+	var state=checkBox.checked;
+
+	var table=document.getElementById("subtitles");
+	for (var i=0; i < table.rows.length; i++) {
+		fromTableRowIndex_getCheckbox(table,i).checked=state;
+	}	
 }
 function selectCheckBox(event) {	
 	if (event.shiftKey==true && LAST_BOX != -1) {
@@ -1645,7 +1787,6 @@ function processTilde(event) {
 	} else if (videoTag.getAttribute("ctrlKey") == "true") {
 		event.preventDefault();		
 		setTimecode("IN", 0, document.getElementById("currentTimecode").innerHTML);
-		console.log("setting");
 	} 
 	
 	forceDraw();	
@@ -1673,40 +1814,37 @@ function processEnter(event) {
 		return;		
 	}
 	
-	// If we're not in IN0, OUT0, or SUB0 then TAB shouldn't do anything but the normal behavior
+	// If we're not in IN0, OUT0, or SUB0 then ENTER shouldn't do anything but the normal behavior
 	if ( document.getElementById("currentInput").contains(document.activeElement) == false)
 			return;
 		
 	// If the user does SHIFT + ENTER we just add a new line. 
 	//	Otherwise add a new sub (or just set an OUT point if it's not set)
 	if (event.shiftKey==false) {
-		// Prevent SHIFT+ENTER from adding a newline in the currentSubtitle input
+		// Prevent ENTER from adding a newline in the currentSubtitle input
 		if (document.activeElement == document.getElementById("SUB0")) 
 			event.preventDefault();	
-			
-		var currentIn=document.getElementById("IN0");
-		var currentOut=document.getElementById("OUT0");
 	
 		if (getTimecode("IN", 0) == "") {
 			updateStatusMessage("No In Point Set!");
 			return;
 		}
-	
-		var currentOut=getTimecode("OUT", 0);
-		if (currentOut != "" && validTimecode(currentOut) == false) {
-			updateStatusMessage("Invalid Timecode in your current OUT point");
-			return;
-		}		
-		else if (currentOut == "") {
+		
+		if (getTimecode("OUT", 0) == "") {
 			setTimecode("OUT", 0, document.getElementById("currentTimecode").innerHTML);
 			document.getElementById("SUB0").focus();
 			return;
 		}
 	
+		BTNaddSubtitle();
+/*		var tempOut=getTimecode("OUT", 0);
+		createUndoState("STARTAPPEND", 0, true);			
 		createUndoState("CU", 0, true, true);
 		addSub(-1, true, true);
+		// TODO: Add a flag so the user can enable/disable automatically setting this IN point after adding a subtitle
+		setTimecode("IN", 0, tempOut, false);	
 		createUndoState("CR", 0, true, true);		
-		createUndoState("ENDAPPEND", 0, true);		
+		createUndoState("ENDAPPEND", 0, true);	*/	
 	}
 }
 function processUpArrow(event) {

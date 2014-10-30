@@ -260,7 +260,7 @@ input[type='file'] {
 	text-align: center;
 	min-width: 145px;
 	min-height: 45px;
-	padding: 0em;
+	padding: 0em 5px;
 	margin-left: 10px;
 }
 
@@ -269,6 +269,9 @@ input[type='file'] {
 	margin: 0px 3px 2px 3px;
 }
 
+.controlWrapper > div > button {
+	margin-left: 20px;
+}
 .controlWrapperShrink {
 	margin: 0 3.5px;
 }
