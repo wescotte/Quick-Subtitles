@@ -270,7 +270,7 @@ input[type='file'] {
 }
 
 .controlWrapper > div > button {
-	margin-left: 20px;
+	margin-left: 8px;
 }
 .controlWrapperShrink {
 	margin: 0 3.5px;

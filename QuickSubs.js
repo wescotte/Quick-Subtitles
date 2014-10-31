@@ -111,7 +111,9 @@ function init() {
 	document.getElementById("BTNclearInPoint").addEventListener("click", BTNclearInPoint);
 	document.getElementById("BTNclearOutPoint").addEventListener("click", BTNclearOutPoint);	
 	document.getElementById("BTNaddSubtitle").addEventListener("click", BTNaddSubtitle);	
-	
+	document.getElementById("BTNundo").addEventListener("click", undo);	
+	document.getElementById("BTNredo").addEventListener("click", redo);	
+		
 	document.getElementById("playRate").addEventListener("change", changePlayRate);
 	document.getElementById("fontSize").addEventListener("change", updateFontSize);
 	document.getElementById("fontColor").addEventListener("change", updateFontColor);
@@ -229,20 +231,20 @@ function BTNaddSubtitle(event) {
 		}		
 	
 		var tempOut=getTimecode("OUT", 0);
-		createUndoState("STARTAPPEND", 0, true);			
+		createUndoState("STARTBUFFER", 0, true);			
 		createUndoState("CU", 0, true, true);
 		addSub(-1, true, true);
 		// TODO: Add a flag so the user can enable/disable automatically setting this IN point after adding a subtitle
 		setTimecode("IN", 0, tempOut, false);	
 		createUndoState("CR", 0, true, true);		
-		createUndoState("ENDAPPEND", 0, true);	
+		createUndoState("ENDBUFFER", 0, true);	
 }
 
 function setupUndoBuffer() {
 	undoBuffer=new Array();
 	
 	// Create the initial undo state 
-	setSubtitle(0, ""); 
+	//setSubtitle(0, ""); 
 }
 function createUndoState(type, row, appendState) {
 	if(typeof(appendState)==='undefined') {
@@ -257,14 +259,14 @@ function createUndoState(type, row, appendState) {
 		undoBuffer=undoBuffer.splice(0,undoPosition+2);	
 	}
 
-	if (undoBuffer[undoPosition] == null || appendState == false || type == "STARTAPPEND") {
+	if (undoBuffer[undoPosition] == null || appendState == false || type == "STARTBUFFER") {
 		undoBuffer[undoPosition]=new Array();
-		if (type == "STARTAPPEND")
+		if (type == "STARTBUFFER")
 			return;
 	}
 
 	// This is because the addSub undoState is initially created using a row <tr>...</tr> contents rather than the custom object
-	if (type == "ENDAPPEND") {
+	if (type == "ENDBUFFER") {
 		rebuildBuffer();
 		appendState=false;
 	} else {		
@@ -308,12 +310,12 @@ function rebuildBuffer() {
 	}
 }
 function undo() {
+	var lastUndoPosition=undoPosition;
 	previousUndoState();
 
-	// Backup current values because we are will be overwriting them to reuse the addSub() code
-	var oldIn=getTimecode("IN", 0);
-	var oldOut=getTimecode("OUT", 0);
-	var oldSub=getSubtitle(0);	
+	// Makes sure we don't keep trying to undo the first undoState over and over	
+	if (lastUndoPosition == undoPosition) 
+		return;
 	
 	var rebuildIDs=false;
 	for (var i=0; i < undoBuffer[undoPosition].length; i++) {
@@ -386,7 +388,7 @@ function previousUndoState() {
 	if (undoPosition < 0) {
 		undoPosition=0;
 		updateStatusMessage("Nothing to undo");
-	}	
+	}
 }
 
 function undoChange(data) {
@@ -403,21 +405,10 @@ function undoAdd(data) {
 	CURRENT_ROW--;
 }
 function undoRemove(data) {
-	// Backup current values because we are will be overwriting them to reuse the addSub() code
-	var oldIn=getTimecode("IN", 0);
-	var oldOut=getTimecode("OUT", 0);
-	var oldSub=getSubtitle(0);	
-	
 	setTimecode("IN", 0, data.inP, false);
 	setTimecode("OUT", 0, data.outP, false);
 	setSubtitle(0, data.subtitle, false);			
-	addSub(-1,false, false);
-/*
-	// Restore current values now that the file is loaded.
-	setTimecode("IN", 0, oldIn, false);
-	setTimecode("OUT", 0, oldOut, false);
-	setSubtitle(0, oldSub, false);		
-*/		
+	addSub(-1,false, false);	
 }
 
 function showInstructions() {
@@ -467,7 +458,7 @@ function loadSRTFile() {
 		setSubtitle(0, "", false, false);
 		
 		// Start the Undo Buffer State
-		createUndoState("STARTAPPEND", 0, true);	
+		createUndoState("STARTBUFFER", 0, true);	
 					
 		for (var l in lines) {
 			line=lines[l];
@@ -517,7 +508,7 @@ function loadSRTFile() {
 
 		// Create undo state for the current subtitle ended in ROW0
 		createUndoState("CR", 0, true, true);		
-		createUndoState("ENDAPPEND", 0, true);	
+		createUndoState("ENDBUFFER", 0, true);	
 		
 		// Reset the file value to "" in the event the user attempts to load the same file again.
 		document.getElementById("loadSubtitles").value="";
@@ -854,13 +845,11 @@ function updateFontBackgroundOpacity(event) {
 function updateFontBackgroundColor(event) {
 	var color=event.target.value;
 	
-	console.log(color);
 	var r = parseInt(color.substr(1,2), 16);
 	var g = parseInt(color.substr(3,2), 16);
 	var b = parseInt(color.substr(5,2), 16);
 	
 	var colorString="rgba(" + r + "," + g + ","	+ b + "," + document.getElementById("bgOpacity").value + ")";
-	console.log(colorString);
 	document.getElementById('overlaySubtitle').style.backgroundColor=colorString;
 }
 
@@ -871,27 +860,46 @@ function updateOverlayText(newValue) {
 
 function setTimecode(type, row, newValue, createUndo, appendUndoState) {
 	var node = document.getElementById(type + row);
-	
+	if(typeof(createUndo)==='undefined') 
+		createUndo = true;
+	if(typeof(appendUndoState)==='undefined') 
+		appendUndoState = false;	
+		
+	if (createUndo) {
+		if (appendUndoState == false)
+			createUndoState("STARTBUFFER", 0, true);		
+		createUndoState("CU", row, true);	
+	}		
 	if (node == null) {
 		updateStatusMessage("ERROR! Unable to set timecode: " + newValue + " for " + type + " point for row: " + row);
 		console.log("ERROR! Unable to set subtitle value for row: " + row + " Here is a table dump");
 		console.log(document.getElementById("subtitles"));
 		return;
 	}
-		
+	
 	var changeEvent = new Event('change');
 	
 	node.value = newValue;
 	node.dispatchEvent(changeEvent);
 
-	if(typeof(createUndo)==='undefined') 
-		createUndo = true;
-	if (createUndo)
-		createUndoState("C", row, appendUndoState);	
+	if (createUndo) {
+		createUndoState("CR", row, true);
+		if (appendUndoState == false)			
+			createUndoState("ENDBUFFER", 0, true);		
+	}		
 }
 function setTimecodeNative(type, row, newValue, createUndo, appendUndoState) {
 	var node = document.getElementById(type + row);
-	
+	if(typeof(createUndo)==='undefined') 
+		createUndo = true;	
+	if(typeof(appendUndoState)==='undefined') 
+		appendUndoStateo = false;		
+		
+	if (createUndo) {
+		if (appendUndoState == false)
+			createUndoState("STARTBUFFER", 0, true);		
+		createUndoState("CU", row, true);	
+	}		
 	if (node == null) {
 		updateStatusMessage("ERROR! Unable to set timecode: " + newValue + " for " + type + " point for row: " + row);
 		console.log("ERROR! Unable to set subtitle value for row: " + row + " Here is a table dump");
@@ -904,10 +912,11 @@ function setTimecodeNative(type, row, newValue, createUndo, appendUndoState) {
 	node.setAttribute("data-nativetc", newValue);
 	node.value=convertTC_NativetoSRT(newValue);
 	
-	if(typeof(createUndo)==='undefined') 
-		createUndo = true;
-	if (createUndo)
-		createUndoState("C", row, appendUndoState);	
+	if (createUndo) {
+		createUndoState("CR", row, true);
+		if (appendUndoState == false)		
+			createUndoState("ENDBUFFER", 0, true);			
+	}	
 }
 
 function getTimecode(type, row) {
@@ -928,20 +937,30 @@ function getTimecodeNative(type, row) {
 
 function setSubtitle(row, newValue, createUndo, appendUndoState) {
 	var node=document.getElementById("SUB" + row);
-	
+	if(typeof(createUndo)==='undefined') 
+		createUndo = true;
+	if(typeof(appendUndoState)==='undefined') 
+		appendUndoStateo = false;	
+
+	if (createUndo) {
+		if (appendUndoState == false)
+			createUndoState("STARTBUFFER", 0, true);		
+		createUndoState("CU", row, true);	
+	}	
+				
 	if (node == null) {
 		updateStatusMessage("ERROR! Unable to set subtitle value for row: " + row);
 		console.log("ERROR! Unable to set subtitle value for row: " + row + " Here is a table dump");
 		console.log(document.getElementById("subtitles"));
 		return;
 	}
-
 	node.value=newValue;
 	
-	if(typeof(createUndo)==='undefined') 
-		createUndo = true;
-	if (createUndo)
-		createUndoState("C", row, appendUndoState);		
+	if (createUndo) {
+		createUndoState("CR", row, true);
+		if (appendUndoState == false)			
+			createUndoState("ENDBUFFER", 0, true);		
+	}		
 }
 function getSubtitle(row) {
 	var sub=document.getElementById("SUB" + row);
@@ -1038,9 +1057,7 @@ function resetDisplayedSubtitle(event) {
 	if(typeof(event)!=='undefined') {
 		// Since this function is called for several reasons we need to avoid making undo states for everything except subtitle text changes
 		if (event.target.id.substr(0,3) == "SUB") {
-			console.log(event);
 			var row=event.target.id.substr(3);
-			console.log(row);
 			createUndoState("C", row, false);
 		}
 	}
@@ -1284,7 +1301,7 @@ function deleteSubs(event) {
 		if (document.getElementById("BOX"+i).checked) {
 			// We only want to start the undoBuffer once...
 			if (numberDeleted == 0)
-				createUndoState("STARTAPPEND", 0, true);	
+				createUndoState("STARTBUFFER", 0, true);	
 			createUndoState("R", i, true);
 			table.deleteRow(document.getElementById("ROW"+i).rowIndex);
 			numberDeleted++;
@@ -1295,7 +1312,7 @@ function deleteSubs(event) {
 	if (numberDeleted == 0)
 		return;
 	
-	createUndoState("ENDAPPEND", 0, true);	
+	createUndoState("ENDBUFFER", 0, true);	
 	
 	// Never actually 0 because we always count our data entry line
 	CURRENT_ROW=table.rows.length + 1;
@@ -1318,7 +1335,7 @@ function splitSub(event) {
 	var tempSub=getSubtitle(0);
 	
 	// Create a undo state for the original IN/OUT length
-	createUndoState("STARTAPPEND", 0, true);		
+	createUndoState("STARTBUFFER", 0, true);		
 	createUndoState("CU", row, true);
 	
 	var halfWayPoint=(getTimecodeNative("OUT", row) - getTimecodeNative("IN", row)) / 2;
@@ -1333,7 +1350,7 @@ function splitSub(event) {
 	
 	createUndoState("CR", row, true);	
 	addSub(-1, true, true);	
-	createUndoState("ENDAPPEND", 0, true);	
+	createUndoState("ENDBUFFER", 0, true);	
 
 	
 	// Restore backups
@@ -1408,12 +1425,12 @@ function shiftSubFinalize(event) {
 		setTimecodeNative("OUT", row, oldOut, false, false);
 	} else { 
 		// Set an undoState for the original value
-		createUndoState("STARTAPPEND", 0, true);			
+		createUndoState("STARTBUFFER", 0, true);			
 		createUndoState("CR", row, true);
 		setTimecodeNative("IN", row, oldIn, false, false);
 		setTimecodeNative("OUT", row, oldOut, false, false);	
 		createUndoState("CU", row, true);
-		createUndoState("ENDAPPEND", 0, true);	
+		createUndoState("ENDBUFFER", 0, true);	
 		
 		// Set back to the new values
 		setTimecodeNative("IN", row, curIn, false, false);
@@ -1493,7 +1510,7 @@ function offsetSubs() {
 		return;
 		var tempOut=getTimecode("OUT", 0);
 					
-	createUndoState("STARTAPPEND", 0, true);	
+	createUndoState("STARTBUFFER", 0, true);	
 		
 	// Step 2: Make the changes to the timecode
 	for (var i=1; i < CURRENT_ROW; i++) {
@@ -1514,7 +1531,7 @@ function offsetSubs() {
 		}
 	}	
 	
-	createUndoState("ENDAPPEND", 0, true);	
+	createUndoState("ENDBUFFER", 0, true);	
 	forceDraw();	
 }
 
@@ -1838,21 +1855,16 @@ function processEnter(event) {
 	
 		BTNaddSubtitle();
 /*		var tempOut=getTimecode("OUT", 0);
-		createUndoState("STARTAPPEND", 0, true);			
+		createUndoState("STARTBUFFER", 0, true);			
 		createUndoState("CU", 0, true, true);
 		addSub(-1, true, true);
 		// TODO: Add a flag so the user can enable/disable automatically setting this IN point after adding a subtitle
 		setTimecode("IN", 0, tempOut, false);	
 		createUndoState("CR", 0, true, true);		
-		createUndoState("ENDAPPEND", 0, true);	*/	
+		createUndoState("ENDBUFFER", 0, true);	*/	
 	}
 }
 function processUpArrow(event) {
-	var videoTag=document.getElementById("video");
-	// If the user isn't holding down META or SHIFT when hitting an arrow then we are ignoring the input
-	if (videoTag.getAttribute("altKey") != "true" && videoTag.getAttribute("metaKey") != "true")
-		return
-		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
 	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
@@ -1860,7 +1872,12 @@ function processUpArrow(event) {
 
 	if (toggleArrows == "OFF" && (bottom || rightSide) )
 		return;
-			
+		
+	var videoTag=document.getElementById("video");
+	// If the user isn't holding down META or ALT when hitting an arrow then we are ignoring the input
+	if (videoTag.getAttribute("altKey") != "true" && videoTag.getAttribute("metaKey") != "true")
+		return
+					
 	event.preventDefault();
 
 	var videoTag = document.getElementById("video");
@@ -1876,31 +1893,36 @@ function processUpArrow(event) {
 	var oldTime, newTime;
 	newTime=convertTC_NativetoSRT(time);
 			
+	createUndoState("STARTBUFFER", 0, true);			
+				
 	if (index != -1) { // Move OUT point from RIGHT of currentTime to currentTime
+		createUndoState("CU", index, true);
 		oldTime=getTimecode("OUT", index);
-		setTimecode("OUT", index, newTime );
-		
+		setTimecode("OUT", index, newTime, false);
+		createUndoState("CR", index, true);
+				
 		// If the previous IN point time was the same as the OUT point we just moved let's also adjust it
 		if (videoTag.getAttribute("metaKey") == "true") {
 			var oIndex=getIndexFromTimecode("IN", oldTime);
 			if (oIndex != -1 ) {
-				setTimecode("IN", oIndex, newTime); 
+				createUndoState("CU", oIndex, true);			
+				setTimecode("IN", oIndex, newTime, false);
+				createUndoState("CR", oIndex, true); 
 			}
 		}
 	} else { // Move OUT point on the left of currentTime to currentTime
 		index=getClosestPointFromTime("OUT", time, false);
 		if (index != -1) {
-			setTimecode("OUT", index, newTime );
+			createUndoState("CU", index, true);		
+			setTimecode("OUT", index, newTime, false);
+			createUndoState("CR", index, true);
 		}
 	}
+	
+	createUndoState("ENDBUFFER", 0, true);
 	resetDisplayedSubtitle();	
 }
 function processDownArrow(event) {
-	var videoTag=document.getElementById("video");
-	// If the user isn't holding down META or SHIFT when hitting an arrow then we are ignoring the input
-	if (videoTag.getAttribute("altKey") != "true" && videoTag.getAttribute("metaKey") != "true")
-		return
-		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
 	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
@@ -1908,7 +1930,12 @@ function processDownArrow(event) {
 
 	if (toggleArrows == "OFF" && (bottom || rightSide) )
 		return;
-			
+
+	var videoTag=document.getElementById("video");
+	// If the user isn't holding down META or ALT when hitting an arrow then we are ignoring the input
+	if (videoTag.getAttribute("altKey") != "true" && videoTag.getAttribute("metaKey") != "true")
+		return
+					
 	event.preventDefault();
 
 	var videoTag = document.getElementById("video");
@@ -1923,32 +1950,37 @@ function processDownArrow(event) {
 	var index=getIndexForSurroundingTime(time);
 	var oldTime, newTime;
 	newTime=convertTC_NativetoSRT(time);
-			
+
+	createUndoState("STARTBUFFER", 0, true);	
+				
 	if (index != -1) { // Move IN point from LEFT of currentTime to currentTime
+		createUndoState("CU", index, true);		
 		oldTime=getTimecode("IN", index);
-		setTimecode("IN", index, newTime );
+		setTimecode("IN", index, newTime, false);
+		createUndoState("CR", index, true);	
 		
 		// If the previous OUT point time was the same as the IN point we just moved let's also adjust it
 		if (videoTag.getAttribute("metaKey") == "true") {
 			var oIndex=getIndexFromTimecode("OUT", oldTime);
 			if (oIndex != -1 ) {
-				setTimecode("OUT", oIndex, newTime); 
+				createUndoState("CU", oIndex, true);		
+				setTimecode("OUT", oIndex, newTime, false); 
+				createUndoState("CR", oIndex, true);		
 			}
 		}
 	} else { // Move IN point on the right of currentTime to currentTime
 		index=getClosestPointFromTime("IN", time, true);
 		if (index != -1) {
-			setTimecode("IN", index, newTime );
+			createUndoState("CU", index, true);		
+			setTimecode("IN", index, newTime, false);
+			createUndoState("CR", index, true);		
 		}
 	}
+	
+	createUndoState("ENDBUFFER", 0, true);		
 	resetDisplayedSubtitle();		
 }
 function processLeftArrow(event) {
-	var videoTag=document.getElementById("video");
-	// If the user isn't holding down META or SHIFT when hitting an arrow then we are ignoring the input
-	if (videoTag.getAttribute("shiftKey") != "true" && videoTag.getAttribute("metaKey") != "true")
-		return
-		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
 	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
@@ -1956,7 +1988,12 @@ function processLeftArrow(event) {
 
 	if (toggleArrows == "OFF" && (bottom || rightSide) )
 		return;
-			
+
+	var videoTag=document.getElementById("video");
+	// If the user isn't holding down META when hitting an arrow then we are ignoring the input
+	if (videoTag.getAttribute("metaKey") != "true")
+		return
+					
 	event.preventDefault();
 
 	var videoTag = document.getElementById("video");
@@ -1978,11 +2015,6 @@ function processLeftArrow(event) {
 	resetDisplayedSubtitle();	
 }
 function processRightArrow(event) {
-	var videoTag=document.getElementById("video");
-	// If the user isn't holding down META or SHIFT when hitting an arrow then we are ignoring the input
-	if (videoTag.getAttribute("shiftKey") != "true" && videoTag.getAttribute("metaKey") != "true")
-		return
-		
 	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
 	var bottom=document.getElementById("bottom").contains(document.activeElement);
 	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
@@ -1990,7 +2022,12 @@ function processRightArrow(event) {
 
 	if (toggleArrows == "OFF" && (bottom || rightSide) )
 		return;
-			
+
+	var videoTag=document.getElementById("video");
+	// If the user isn't holding down META when hitting an arrow then we are ignoring the input
+	if (videoTag.getAttribute("metaKey") != "true")
+		return
+								
 	event.preventDefault();
 
 	var videoTag = document.getElementById("video");
