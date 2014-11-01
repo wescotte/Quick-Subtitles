@@ -22,6 +22,11 @@ not, see http://www.gnu.org/licenses/.
 		
 	addSub() checks for conflicts and reports them. However, if there is a problem it still creates an undo/redo state
 		which isn't necessary.. 
+		
+	undo/redo sometimes produces strange errors in the console... Not sure why.
+		It appears to be a caching/garbage collector issue in Chrome because if you delete a group of rows
+		and then "undo it" they will keep the checkbox flag which shouldn't be occur because we're creating these
+		elements from scratch when we "undo" them.
 */
 
 /* Start CURRENT_ROW = 1 for two reasons...
