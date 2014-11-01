@@ -16,7 +16,7 @@ not, see http://www.gnu.org/licenses/.
 */
 
 /* TODO: 
-	GET SplitSub to redraw when you actually split
+
 	
 	TAB doesn't let you set an in point when no video is loading but typing any key in the box does.. Look into this.
 	
@@ -82,26 +82,23 @@ var undoPosition=0;
 
 function init() {
 	setupUndoBuffer();
-	// By default arrow keys are enabled
-	toggleArrows();
 	
 	// Setup all the event listeners
-	
-	// Setup Buttons
 	document.getElementById("showInstructions").addEventListener("click", showInstructions);
 	document.getElementById("hideInstructions").addEventListener("click", hideInstructions);		
 
 	document.getElementById("saveSubtitles").addEventListener("click", saveSRTFile);
 	document.getElementById("exportSubtitles").addEventListener("click", exportSTL);	
 
+	// These two are used to hide the default button for <input type="file"...> 
+	//	When they are clicked we just push a click event to the hidden elements
 	document.getElementById("BTNvideoLoad").addEventListener("click", 
 		function() { var event = new Event("click"); document.getElementById('loadVideo').dispatchEvent(event); }
 	);
 	document.getElementById("BTNsubtitleLoad").addEventListener("click", 
 		function() { var event = new Event("click"); document.getElementById('loadSubtitles').dispatchEvent(event); }
 	);	
-		
-	document.getElementById("toggleArrows").addEventListener("click", toggleArrows);	
+			
 	document.getElementById("BTNappyOffet").addEventListener("click", offsetSubs);	
 	document.getElementById("deleteSubs").addEventListener("click", deleteSubs);		
 	document.getElementById("selectAllCheckbox").addEventListener("click", selectAll);						
@@ -183,11 +180,12 @@ function playSelectedFileInit(event) {
 	videoTag.addEventListener('play', resetDisplayedSubtitle);
 	videoTag.addEventListener('seeked', resetDisplayedSubtitle);
 
-	// We have to ensure the video is actually loaded before we should generate a waveform
-	setTimeout(checkReady, 500);			
+	// We have to ensure the video is actually loaded before we attempt to generate a waveform
+	setTimeout(checkReady, 250);			
 }
 
 function BTNsetInPoint(event) {
+	resetStatus();
 	var videoTag = document.getElementById("video");
 	if (videoTag.readyState != 4) {
 		updateStatusMessage("No video file loaded!");
@@ -199,6 +197,7 @@ function BTNsetInPoint(event) {
 	forceDraw();
 }
 function BTNsetOutPoint(event) {
+	resetStatus();
 	var videoTag = document.getElementById("video");
 	if (videoTag.readyState != 4) {
 		updateStatusMessage("No video file loaded!");
@@ -210,41 +209,41 @@ function BTNsetOutPoint(event) {
 	forceDraw();
 }
 function BTNclearInPoint(event) {
+	resetStatus();
 	setTimecode("IN", 0, "");
 	forceDraw();	
 }
 function BTNclearOutPoint(event) {
+	resetStatus();
 	setTimecode("OUT", 0, "");
 	forceDraw();	
 }
 function BTNaddSubtitle(event) {
-		var currentIn=getTimecode("IN", 0);
-		var currentOut=getTimecode("OUT", 0);
-		
-		if (currentIn != "" && validTimecode(currentIn) == false) {
-			updateStatusMessage("Invalid Timecode in your current IN point");
-			return;
-		}			
-		if (currentOut != "" && validTimecode(currentOut) == false) {
-			updateStatusMessage("Invalid Timecode in your current OUT point");
-			return;
-		}		
+	resetStatus();
+	var currentIn=getTimecode("IN", 0);
+	var currentOut=getTimecode("OUT", 0);
 	
-		var tempOut=getTimecode("OUT", 0);
-		createUndoState("STARTBUFFER", 0, true);			
-		createUndoState("CU", 0, true, true);
-		addSub(-1, true, true);
-		// TODO: Add a flag so the user can enable/disable automatically setting this IN point after adding a subtitle
-		setTimecode("IN", 0, tempOut, false);	
-		createUndoState("CR", 0, true, true);		
-		createUndoState("ENDBUFFER", 0, true);	
+	if (currentIn != "" && validTimecode(currentIn) == false) {
+		updateStatusMessage("Invalid Timecode in your current IN point");
+		return;
+	}			
+	if (currentOut != "" && validTimecode(currentOut) == false) {
+		updateStatusMessage("Invalid Timecode in your current OUT point");
+		return;
+	}		
+
+	var tempOut=getTimecode("OUT", 0);
+	createUndoState("STARTBUFFER", 0, true);			
+	createUndoState("CU", 0, true, true);
+	addSub(-1, true, true);
+	// TODO: Add a flag so the user can enable/disable automatically setting this IN point after adding a subtitle
+	setTimecode("IN", 0, tempOut, false);	
+	createUndoState("CR", 0, true, true);		
+	createUndoState("ENDBUFFER", 0, true);	
 }
 
 function setupUndoBuffer() {
 	undoBuffer=new Array();
-	
-	// Create the initial undo state 
-	//setSubtitle(0, ""); 
 }
 function createUndoState(type, row, appendState) {
 	if(typeof(appendState)==='undefined') {
@@ -282,8 +281,6 @@ function createUndoState(type, row, appendState) {
 
 	if (!appendState) 	
 		nextUndoState();
-		
-	console.log(undoBuffer);
 }
 function rebuildBuffer() {
 	var IN, OUT, SUB;
@@ -653,7 +650,6 @@ function checkReady() {
 	else		
 		setTimeout(checkReady, 100);
 }
-
 function generateWaveformPreview() {
 	var waveformPreview=document.getElementById("waveformPreview");
 	var style=window.getComputedStyle(waveformPreview);
@@ -668,23 +664,32 @@ function generateWaveformPreview() {
 	var videoTag=document.getElementById("video");
 	var file = document.getElementById('loadVideo').files[0];
 	
+	// Display Loading Text	
+	var ctx=waveformPreview.getContext("2d");
+	ctx.font="60px san-serif";
+	ctx.fillText("Generating Waveform...",50,80);
+		
 	var fileReader = new FileReader();
 	fileReader.onload = function(e) {
 	  	var arrayBuffer = e.target.result;
 	  	var audioContext;
-		if('audioContext' in window) {
+
+		if (typeof AudioContext !== "undefined") {
 			audioContext = new AudioContext();
-			console.log("not using webkit");
-		}
-		else if('webkitAudioContext' in window) {
+			console.log("not using webkit for audio");
+		} else if (typeof webkitAudioContext !== "undefined") {
 			audioContext = new webkitAudioContext();
-			console.log("using webkit");
+			console.log("using webkit for audio");
+		} else {
+			throw new Error('AudioContext not supported. :(');
 		}	  	
-	  	
-	  	console.log("loaded");
+
         audioContext.decodeAudioData( arrayBuffer, compressSamples );  
 	}
 	fileReader.onerror = function(e) {
+		ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+		updateStatusMessage("ERROR: Can't read file to generate a waveform preview. Chrome's file API has a bug where it has problems reading big files."
+			+ "Try creating a smaller video with a lower bitrate or use a different browser. The sweet spot seems to be anything under 500mb.");
 		console.log("Error reading file");
 		console.log(e);
 	}
@@ -797,7 +802,8 @@ function drawWaveform() {
 */	
 			ctx.fillRect(x,y,w,h);	
 			ctx.strokeRect(x,y,w,h);	
-			
+
+			ctx.font="10px san-serif";
 			ctx.fillStyle = "rgb(255,255,255)";
 			ctx.fillText(getSubtitle(i),x+5,y-4,w);
 		}
@@ -1103,21 +1109,12 @@ function validTimecode(TC) {
 }
 
 function resetStatus() {
-	updateStatusMessage("");
+	var node=	document.getElementById("statusMessage");
+	node.innerText="";
 }
-function toggleArrows() {
-	var obj=document.getElementById("toggleArrows");
-	if (obj.innerHTML == "ON") {
-		obj.innerHTML = "OFF";
-		obj.parentNode.style.backgroundColor = "";
-	} else {
-		obj.innerHTML = "ON";
-		obj.parentNode.style.backgroundColor = "red";
-	}
-}
-
 function updateStatusMessage(message) {
-	document.getElementById("statusMessage").innerHTML=message;
+	var node=	document.getElementById("statusMessage");
+	node.innerText=message;
 }
 
 function detectTimecodeOverlap(row, curIn, curOut) {
@@ -1204,7 +1201,10 @@ function addSub(insertAt, createUndo, appendUndoState) {
 	}	
 		
 	if ( inPointNative >= outPointNative ) {
-		updateStatusMessage("You can't set an IN point after an OUT point!");
+		if (inPointNative == outPointNative)
+			updateStatusMessage("You can't set an IN point and OUT point to the same value!");
+		else
+			updateStatusMessage("You can't set an IN point after an OUT point!");
 		return;
 	}
 	
@@ -1371,6 +1371,7 @@ function shiftSub(event) {
 	var oldOut=document.getElementById("OUT" + row).getAttribute("beforeSlide");
 
 	if ( (isNaN(oldIn) || isNaN(oldOut) ) || (oldIn == null || oldOut == null) ) {
+		resetStatus();
 		document.getElementById("IN" + row).setAttribute("beforeSlide", curIn);
 		document.getElementById("OUT" + row).setAttribute("beforeSlide", curOut);
 		oldIn=curIn;
@@ -1388,23 +1389,39 @@ function shiftSub(event) {
 	var newIn=Number(oldIn);
 	var newOut=Number(oldOut)	
 	var videoTag=document.getElementById("video");
-
 		
 	if (videoTag.getAttribute("altKey") != "true")
 		newIn=newIn + Number(event.target.value);
 	if (videoTag.getAttribute("shiftKey") != "true")
 		newOut=newOut + Number(event.target.value);
 			
+	// Don't let the user slide the subtitle past the start of the video		
 	if (newIn < 0) {
 		newOut=newOut - newIn; // Do this to keep the subtitle the same total duration
 		newIn = 0;
 	}
-	var videoTag=document.getElementById("video");
+	
+	// Don't let the user slide the subtitle past the end of the video
 	if (newOut > videoTag.duration) {
 		newIn=newOut - newIn; // Do this to keep the subtitle the same total duration
 		newOut=videoTag.duration;
 	}
 	
+	// Don't let the user slide a subtitle inside another subtitle
+	var collideSub=detectTimecodeOverlap(row, newIn, newOut);
+	if (collideSub != -1) {
+		var duration=newOut-newIn;
+		var collideIn=getTimecodeNative("IN", collideSub);
+		var collideOut=getTimecodeNative("OUT", collideSub);
+		if ( newIn > collideIn && newIn < collideOut ) {
+			newIn=collideOut;
+			newOut=newIn+duration;
+		} else if ( newOut > collideIn && newOut < collideOut ) {
+			newOut=collideIn;
+			newIn=newOut-duration;
+		}  
+	}
+		
 	setTimecodeNative("IN", row, newIn, false, false);
 	setTimecodeNative("OUT", row, newOut, false, false);	
 	
@@ -1416,8 +1433,7 @@ function shiftSubFinalize(event) {
 	var curOut=getTimecodeNative("OUT",row);
 	var oldIn=document.getElementById("IN" + row).getAttribute("beforeSlide");
 	var oldOut=document.getElementById("OUT" + row).getAttribute("beforeSlide");
-			
-	console.log(oldIn + " " + oldOut);		
+				
 	var collideSub=detectTimecodeOverlap(row, curIn, curOut);
 	if (collideSub != -1) {
 		updateStatusMessage("Colliding with subtitle in row: " + collideSub);
@@ -1590,6 +1606,20 @@ function changePlayRate() {
 	
 	document.getElementById("currentSpeed").innerText="Current Speed:" + asPercentage + "%";
 }
+function slowDownVideo() {
+	var node=document.getElementById("currentSpeed");
+	node.value--;
+	
+	var event=new Event("change");
+	node.dispatchEvent(event);	
+}
+function speedUpVideo() {
+	var node=document.getElementById("currentSpeed");
+	node.value++;
+	
+	var event=new Event("change");
+	node.dispatchEvent(event);
+}
 
 function selectAll(event) {
 	var checkBox=event.target;
@@ -1714,8 +1744,38 @@ function processKeyboardInput(event) {
 		videoTag.setAttribute("metaKey", "true");
 
 	switch(event.keyCode) {
+		// Set IN/OUT Point
+		case 73: // I
+		case 219: // [
+			if (videoTag.getAttribute("ctrlKey") == "true")
+				BTNsetInPoint(event);
+			break;
+		case 79: // O
+		case 221: // ]
+			if (videoTag.getAttribute("ctrlKey") == "true")
+				BTNsetOutPoint(event);
+			break;
+		
+		// Clear IN/OUT Point	
+		case 188: // , and < key	
+			if (videoTag.getAttribute("ctrlKey") == "true")
+				BTNclearInPoint(event); 
+		break;
+		case 190: // . and > key
+			if (videoTag.getAttribute("ctrlKey") == "true")
+				BTNclearInPoint(event); 
+		break;
+		
+		case 189: // - key
+			if (videoTag.getAttribute("ctrlKey") == "true")
+				slowDownVideo();
+		break;		
+		case 187: // + key
+			if (videoTag.getAttribute("ctrlKey") == "true")
+				speedUpVideo()		
+		break;
+						
 		case 9: processTab(event);			break;
-		case 192:processTilde(event);		break;
 		case 13: processEnter(event); 		break;
 		
 		case 38: processUpArrow(event); 	break;
@@ -1736,7 +1796,7 @@ function processKeyboardInput(event) {
 		case 114: // F3
 			redo(); 
 			break;
-			
+		
 		case 112: // F1 Key
 			if (document.getElementById("instructionsContainer").style.display == "block")
 		 		hideInstructions(); 
@@ -1749,20 +1809,7 @@ function processKeyboardInput(event) {
 				videoTag.play();
 			else
 				videoTag.pause();
-			break;
-
-		case 17: // Control Key + Alt Key Down
-			if (event.altKey == true) {
-				event.preventDefault();
-				toggleArrows();
-			}
-			break;
-		case 18: // Alt key + Control Key Down
-			if (event.ctrlKey == true) {
-				event.preventDefault();
-				toggleArrows();
-			}
-			break;			
+			break;				
 	}
 
 	forceDraw();	
@@ -1783,30 +1830,13 @@ function processKeyboardInputKeyUp(event) {
 
 function processTab(event) {
 	// If we're not in IN0, OUT0, or SUB0 then TAB shouldn't do anything but the normal behavior
-	if ( document.getElementById("currentInput").contains(document.activeElement) == false)
+	if ( document.getElementById("rightSide").contains(document.activeElement) == true)
 			return;
 			
-	if (document.activeElement == document.getElementById("SUB0")) {
+//	if (document.activeElement == document.getElementById("SUB0")) {
 		event.preventDefault();	
 		rewind();		
-	}
-}
-function processTilde(event) {	
-	var videoTag = document.getElementById("video");
-	if (videoTag.readyState != 4) {
-		updateStatusMessage("No video file loaded!");
-		return;
-	}
-	
-	if (videoTag.getAttribute("altKey") == "true") {
-		event.preventDefault();	
-		setTimecode("IN", 0, "");
-	} else if (videoTag.getAttribute("ctrlKey") == "true") {
-		event.preventDefault();		
-		setTimecode("IN", 0, document.getElementById("currentTimecode").innerHTML);
-	} 
-	
-	forceDraw();	
+//	}
 }
 function processEnter(event) {
 	var videoTag = document.getElementById("video");
@@ -1865,14 +1895,6 @@ function processEnter(event) {
 	}
 }
 function processUpArrow(event) {
-	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
-	var bottom=document.getElementById("bottom").contains(document.activeElement);
-	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
-	var toggleArrows=document.getElementById("toggleArrows").innerHTML.toUpperCase();
-
-	if (toggleArrows == "OFF" && (bottom || rightSide) )
-		return;
-		
 	var videoTag=document.getElementById("video");
 	// If the user isn't holding down META or ALT when hitting an arrow then we are ignoring the input
 	if (videoTag.getAttribute("altKey") != "true" && videoTag.getAttribute("metaKey") != "true")
@@ -1923,14 +1945,6 @@ function processUpArrow(event) {
 	resetDisplayedSubtitle();	
 }
 function processDownArrow(event) {
-	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
-	var bottom=document.getElementById("bottom").contains(document.activeElement);
-	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
-	var toggleArrows=document.getElementById("toggleArrows").innerHTML.toUpperCase();
-
-	if (toggleArrows == "OFF" && (bottom || rightSide) )
-		return;
-
 	var videoTag=document.getElementById("video");
 	// If the user isn't holding down META or ALT when hitting an arrow then we are ignoring the input
 	if (videoTag.getAttribute("altKey") != "true" && videoTag.getAttribute("metaKey") != "true")
@@ -1981,14 +1995,6 @@ function processDownArrow(event) {
 	resetDisplayedSubtitle();		
 }
 function processLeftArrow(event) {
-	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
-	var bottom=document.getElementById("bottom").contains(document.activeElement);
-	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
-	var toggleArrows=document.getElementById("toggleArrows").innerHTML.toUpperCase();
-
-	if (toggleArrows == "OFF" && (bottom || rightSide) )
-		return;
-
 	var videoTag=document.getElementById("video");
 	// If the user isn't holding down META when hitting an arrow then we are ignoring the input
 	if (videoTag.getAttribute("metaKey") != "true")
@@ -2015,14 +2021,6 @@ function processLeftArrow(event) {
 	resetDisplayedSubtitle();	
 }
 function processRightArrow(event) {
-	// This key should perform it's normal behavior unless toggleArrows == "On" or the user doesn't have an active element in right side or bottom of the UI
-	var bottom=document.getElementById("bottom").contains(document.activeElement);
-	var rightSide=document.getElementById("rightSide").contains(document.activeElement);
-	var toggleArrows=document.getElementById("toggleArrows").innerHTML.toUpperCase();
-
-	if (toggleArrows == "OFF" && (bottom || rightSide) )
-		return;
-
 	var videoTag=document.getElementById("video");
 	// If the user isn't holding down META when hitting an arrow then we are ignoring the input
 	if (videoTag.getAttribute("metaKey") != "true")
