@@ -188,8 +188,8 @@ video::-webkit-media-controls-fullscreen-button {
 .bottomColumn {
 	float: left;
 	height: 100%;
-	width: calc(50% - 10px);
-	margin: 0 5px 0;
+	width: calc(50% - 7px);
+	margin: 0 0 0 5px;
 }
 
 #statusMessage {
@@ -227,22 +227,24 @@ input[type='file'] {
 
 .shiftSubtitle {
 	width: 7em;
+	margin-top: 8px;
 }
 
 .splitSubtitle {
-	width: 7em;
+	width: 7.5em;
+	margin-top: 8px;	
 }
 
 #SHIFT0 {
 	position: absolute;
-	top: 175px;
+	top: 170px;
 	left: 25px;
 	width: 17em;
 }
 
 .controlGroup {
-
 	margin: .15em .5em .15em;
+	margin: .15em 0em .15em .5em;
 	padding: 0em .25em .2em;
 /*	padding: .5em;
 	text-align: center;
@@ -263,7 +265,7 @@ input[type='file'] {
 	padding: .5em;
 	text-align: center;
 	min-width: 145px;
-	min-height: 45px;
+	min-height: 46px;
 	padding: 0em 5px;
 	margin-left: 10px;
 }
@@ -276,9 +278,23 @@ input[type='file'] {
 .controlWrapper > div > button {
 	margin-left: 8px;
 }
+
+.controlWrapper > button {
+	margin: 0px;
+}
+
+.controlWrapper > select {
+	margin: 0px;
+}
+
+.controlWrapper > input {
+	margin: 0px;
+}
+
 .controlWrapperShrink {
 	margin: 0 3.5px;
 }
+
 
 #instructionsContainer a:link {
     text-decoration: none;
@@ -309,8 +325,8 @@ input[type='file'] {
 }
 
 .keyboardInputA, .keyboardInputB, .keyboardInputH {
-	width: 150px;
-	padding-left: 30px;
+	width: 80px;
+	padding-left: 20px;
 	text-align: left;
 }
 
@@ -334,6 +350,14 @@ input[type='file'] {
 	background-color: rgb(235,235,235);
 }
 
+.keyboardInputA > input[type="checkbox"], .keyboardInputB > input[type="checkbox"] {
+    -moz-transform: scale(2);
+    -ms-transform: scale(2);
+    -o-transform: scale(2);
+    -webkit-transform: scale(2);
+    transform: scale(2);
+}
+
 svg {
 	padding-left: 15px;
 }
@@ -343,7 +367,9 @@ kbd {
 	display: inline-block;
 	border:1px solid gray;
 	padding:1px 5px;
-	margin:7px 5px;
+	margin:7px 7px;
+	min-width: 22px;
+	text-align: center;
 	font-family: inital;	
 	font-size:1em;
 	text-transform:uppercase;

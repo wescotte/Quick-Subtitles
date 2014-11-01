@@ -1,14 +1,14 @@
-2014/10/20 Version 0.95 Released
+2014/11/01 Version 1.0 Released
 			Ensured list of subtitles stay in chronological as before new subtitles were just inserted at the end
-			Modified arrow key functionality to require modifier keys this way “Enable Arrows” can be on by default
-				and doesn’t interfere with normal usage nearly as much.
 			Added undo/redo functionality 
 			Added PAL support for STL export
 			Added buttons for setting/clearing IN/OUT points and adding subtitles.
+			When you shift a subtitle it now "sticks" to a neighboring subtitle when they touch/overlap
+				If you keep shifting short subtitles can pass through/jump others.
 			Modified Hotkeys -- See instructions for entire list
 			Cleaned up UI
 			Refactored all HTML onchange/onclick code to use event listeners in init() function.	
-		
+			Lots of tiny little bug fixes on edge cases.
 
 2014/10/04 Version 0.94 Released
 			Fixed bug in updateID()

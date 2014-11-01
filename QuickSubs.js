@@ -15,42 +15,13 @@ You should have received a copy of the GNU General Public License along with Foo
 not, see http://www.gnu.org/licenses/.
 */
 
-/* TODO: 
 
-	
-	TAB doesn't let you set an in point when no video is loading but typing any key in the box does.. Look into this.
-	
-	Look into rounding errors converting SRT to Native and Native to SRT
-	
-	Error Message Cleanup:
-		Add better more descriptive error messages and have it highlight the problem rows
+/* TODO:
+	offsetSubs() could use some work...
+		Make error messages displayed in a more friendly way and perhaps highlight subtitle rows with problems
 		
-	CSS Cleanup:
-		"Enter Subtitles Here" section to format w/o using a table
-		
-	Event Handler Cleanup:
-		Get rid of all the onchange, onclick, etc in the HTML and use addEventListener()'s instead
-	
-	Look into onChange events to verify that when changes are made no subtitles collide or have invalid in/out points
-		Handle overlap with "snap to" sorta functionality?
-		
-	Highlight subtitle in Waveform preview and rightSide for actively displayed AND/OR
-		subtitle that will be affected by UP/DOWn arrow
-		
-	Hotkey to speed up/slow down playback
-	
-	UNDO ability for time adjustments??
-	an UNDO_LEVEL value where every time you slide you record the rows/oldtimecodes and add UNDO_LEVEL+1
-	Every time you undo you UNDO_LEVEL-1 and restore the old rows timecodes
-		probably need to keep subtitles sorted for this
-	
-	Fix time adjustment functionality to better check for problems and display them to the user
-	
-	Add PAL support and for STL exports
-	
-	Load text file as new subs by newlines 
-		squish to end of video and separate by 1 frame so UP/DOWN arrow can quickly resync
-			Add "squish" button for selected subs so you can resync easily
+	addSub() checks for conflicts and reports them. However, if there is a problem it still creates an undo/redo state
+		which isn't necessary.. 
 */
 
 /* Start CURRENT_ROW = 1 for two reasons...
@@ -108,9 +79,9 @@ function init() {
 	document.getElementById("BTNclearInPoint").addEventListener("click", BTNclearInPoint);
 	document.getElementById("BTNclearOutPoint").addEventListener("click", BTNclearOutPoint);	
 	document.getElementById("BTNaddSubtitle").addEventListener("click", BTNaddSubtitle);	
-	document.getElementById("BTNundo").addEventListener("click", undo);	
-	document.getElementById("BTNredo").addEventListener("click", redo);	
-		
+	document.getElementById("BTNundo").addEventListener("click", BTNundo);	
+	document.getElementById("BTNredo").addEventListener("click", BTNredo);	
+				
 	document.getElementById("playRate").addEventListener("change", changePlayRate);
 	document.getElementById("fontSize").addEventListener("change", updateFontSize);
 	document.getElementById("fontColor").addEventListener("change", updateFontColor);
@@ -192,6 +163,12 @@ function BTNsetInPoint(event) {
 		return;
 	}
 	
+	var curTime=videoTag.currentTime;
+	if (getTimecodeNative("OUT", 0) <= curTime) {
+		updateStatusMessage("Error: You can't set an IN point after an OUT point.");
+		return;
+	}
+		
 	setTimecode("IN", 0, document.getElementById("currentTimecode").innerHTML);
 	
 	forceDraw();
@@ -201,6 +178,12 @@ function BTNsetOutPoint(event) {
 	var videoTag = document.getElementById("video");
 	if (videoTag.readyState != 4) {
 		updateStatusMessage("No video file loaded!");
+		return;
+	}
+	
+	var curTime=videoTag.currentTime;
+	if (getTimecodeNative("IN", 0) >= curTime) {
+		updateStatusMessage("Error: You can't set an OUT point before an IN point.");
 		return;
 	}
 	
@@ -220,6 +203,7 @@ function BTNclearOutPoint(event) {
 }
 function BTNaddSubtitle(event) {
 	resetStatus();
+	
 	var currentIn=getTimecode("IN", 0);
 	var currentOut=getTimecode("OUT", 0);
 	
@@ -232,6 +216,15 @@ function BTNaddSubtitle(event) {
 		return;
 	}		
 
+	var inPointNative=getTimecodeNative("IN",0);
+	var outPointNative=getTimecodeNative("OUT",0);
+		
+	var overlapRow=detectTimecodeOverlap(0, inPointNative, outPointNative);
+	if (overlapRow != -1) {
+		updateStatusMessage("You can't add a subtitle that has timecode overlaping... Conflicts with row:" + overlapRow);
+		return;
+	}
+	
 	var tempOut=getTimecode("OUT", 0);
 	createUndoState("STARTBUFFER", 0, true);			
 	createUndoState("CU", 0, true, true);
@@ -239,7 +232,19 @@ function BTNaddSubtitle(event) {
 	// TODO: Add a flag so the user can enable/disable automatically setting this IN point after adding a subtitle
 	setTimecode("IN", 0, tempOut, false);	
 	createUndoState("CR", 0, true, true);		
-	createUndoState("ENDBUFFER", 0, true);	
+	createUndoState("ENDBUFFER", 0, true);
+	
+	forceDraw();		
+}
+function BTNundo(event) {
+	resetStatus();
+	undo();
+	forceDraw();	
+}
+function BTNredo(event) {
+	resetStatus();
+	redo();
+	forceDraw();	
 }
 
 function setupUndoBuffer() {
@@ -306,7 +311,7 @@ function rebuildBuffer() {
 		}	
 	}
 }
-function undo() {
+function undo(event) {
 	var lastUndoPosition=undoPosition;
 	previousUndoState();
 
@@ -337,9 +342,8 @@ function undo() {
 	
 	if (rebuildIDs)
 		updateIDs();
-	
 }	
-function redo() {
+function redo(event) {
 	// If no undo/redo state is defined then there is nothing to do
 	if (undoBuffer[undoPosition] == null) {
 		updateStatusMessage("Nothing to redo");
@@ -435,7 +439,8 @@ function loadSRTFile() {
 			return; 
 		} 
 	}
-	
+
+	resetStatus();	
 	var file = this.files[0];	
 	var reader = new FileReader();	
 		
@@ -780,15 +785,32 @@ function drawWaveform() {
 				curOut=videoTag.currentTime;
 			ctx.fillStyle = "rgba(0,255,0,.5)";
 			draw=true;	
+			// If the OUT point is less than the IN point it's because an OUT point isn't set
+			// and we're scrubbing backwards... So in this special case just leave a floating yellow
+			// subtitle that is 0.25 long so the user can visually see where it is.
+			if (curOut < curIn) {
+				curOut=curIn+.25;
+				ctx.fillStyle = "rgba(255,255,0,.5)";				
+			}
 		} else if (curIn <= videoTag.currentTime && curOut >= videoTag.currentTime) {
 			ctx.fillStyle = "rgba(0,255,0,.5)";
 			draw=true;
-		} else if (curIn >= startTime && curIn <= endTime) {
+			// When subtitle 1's OUT point is the same as subtitle 2's IN point....
+			// We only want to to highlight one of the two subtitles green...
+			if (i < CURRENT_ROW - 1) {
+				var nextIn=getTimecodeNative("IN", i+1);
+				if (nextIn == videoTag.currentTime) {
+					ctx.fillStyle = "rgba(25,25,25,.5)";
+				}
+			}	
+		} else if ( (curIn >= startTime && curIn <= endTime) || ( curOut >= startTime && curOut <= endTime) ) {
 			ctx.fillStyle = "rgba(25,25,25,.5)";			
 			draw=true;
-		} else if (curOut >= startTime && curOut <= endTime) {
-			ctx.fillStyle = "rgba(25,25,25,.5)";					
-			draw=true;
+			// When the user performs a "Shift Sub" on only the IN or OUT point it's possible to temporarily allow
+			//	the IN point come after the OUT point.. The shiftSubFinalize() function won't let it happen
+			//	but it will be drawn this way until the user stops dragging the slider.
+			if (curIn > curOut)
+				ctx.fillStyle = "rgba(255,0,0,.5)";		
 		}
 		
 		if (draw) {			
@@ -1034,6 +1056,15 @@ function processTimeUpdate(event) {
 	if (index != -1) {
 		updateOverlayText(getSubtitle(index));
 		DISPLAYING_SUB_OUT_POINT=getTimecodeNative("OUT", index);
+		
+		// When subtitle 1's OUT point is the same as subtitle 2's IN point....
+		// We want to actually display subtitle 2 and not subtitle 1. So below block of code ensures that happens
+		if (index < CURRENT_ROW -1) {
+			var nextIn=getTimecodeNative("IN", index+1);
+			if (nextIn == time) {
+				updateOverlayText(getSubtitle(index+1));
+			}
+		}	
 		if (index > 0) { // We don't want to scroll the the main data entry row because it doesn't exist in this table
 			var target = document.getElementById("ROW"+index);
 			document.getElementById("scrollingSection").scrollTop = target.offsetTop;
@@ -1067,6 +1098,11 @@ function resetDisplayedSubtitle(event) {
 			createUndoState("C", row, false);
 		}
 	}
+	
+	forceDraw();
+}
+function forceDraw() {
+	document.getElementById("video").setAttribute("forceRedraw", true);
 }
 		
 function convertTC_NativetoSRT(oldTC) {
@@ -1221,7 +1257,7 @@ function addSub(insertAt, createUndo, appendUndoState) {
 	row.appendChild(td);
 	
 	td=document.createElement("td"); td.className="timecode";
-	input=document.createElement("input");
+	input=document.createElement("input"); input.readOnly=true;
 	input.addEventListener('change', updateNativeTimecode);	
 	input.type="text"; input.id="IN" + CURRENT_ROW;
 	input.setAttribute("beforeSlide", "null");
@@ -1231,16 +1267,16 @@ function addSub(insertAt, createUndo, appendUndoState) {
 		
 	input=document.createElement("br");
 	td.appendChild(input);
-	input=document.createElement("input");
+	input=document.createElement("input"); 
 	input.type="range"; input.id="SHIFT" + CURRENT_ROW;
-	input.setAttribute("min", "-1.5"); input.setAttribute("max", "1.5"); 
+	input.setAttribute("min", "-3.0"); input.setAttribute("max", "3.0"); 
 	input.setAttribute("step", "0.025"); input.className="shiftSubtitle"; input.value="0";
 	input.addEventListener('input', shiftSub);	input.addEventListener('change', shiftSubFinalize);	
 	td.appendChild(input);
 	row.appendChild(td);
 	
 	td=document.createElement("td"); td.className="timecode";
-	input=document.createElement("input");
+	input=document.createElement("input"); input.readOnly=true;
 	input.addEventListener('change', updateNativeTimecode);		
 	input.type="text"; input.id="OUT" + CURRENT_ROW;
 	input.setAttribute("beforeSlide", "null");	
@@ -1439,6 +1475,10 @@ function shiftSubFinalize(event) {
 		updateStatusMessage("Colliding with subtitle in row: " + collideSub);
 		setTimecodeNative("IN", row, oldIn, false, false);
 		setTimecodeNative("OUT", row, oldOut, false, false);
+	} else if (curIn >= curOut) {
+		updateStatusMessage("You can't have an IN point come after an OUT point");
+		setTimecodeNative("IN", row, oldIn, false, false);
+		setTimecodeNative("OUT", row, oldOut, false, false);	
 	} else { 
 		// Set an undoState for the original value
 		createUndoState("STARTBUFFER", 0, true);			
@@ -1551,10 +1591,6 @@ function offsetSubs() {
 	forceDraw();	
 }
 
-function forceDraw() {
-	document.getElementById("video").setAttribute("forceRedraw", true);
-}
-
 function fromTableRowIndex_getCheckbox(table, row) {
 	return table.rows[row].cells[0].firstChild;
 }
@@ -1607,18 +1643,30 @@ function changePlayRate() {
 	document.getElementById("currentSpeed").innerText="Current Speed:" + asPercentage + "%";
 }
 function slowDownVideo() {
-	var node=document.getElementById("currentSpeed");
-	node.value--;
+	var node=document.getElementById("playRate");
+	var min=Number(node.getAttribute("min"));
+	
+	var val=Number(node.value) - 1;
+	if (val < min)
+		val=min;
+		
+	node.value=val;
 	
 	var event=new Event("change");
 	node.dispatchEvent(event);	
 }
 function speedUpVideo() {
-	var node=document.getElementById("currentSpeed");
-	node.value++;
+	var node=document.getElementById("playRate");
+	var max=Number(node.getAttribute("max"));
+	
+	var val=Number(node.value) +1;
+	if (val > max)
+		val=max;
+		
+	node.value=val;
 	
 	var event=new Event("change");
-	node.dispatchEvent(event);
+	node.dispatchEvent(event);	
 }
 
 function selectAll(event) {
@@ -1681,8 +1729,10 @@ function getIndexForSurroundingTime(nativeTC) {
 }
 function getClosestPointFromTime(point, nativeTC, forward, margin) {
 	// TODO: Explain the margin
-	if (margin==undefined) margin=0.0;
-	
+	if(typeof(margin)==='undefined')  {
+		margin=0.0;
+		console.log("called");
+	}	
 	var P;
 	var currentBest=Number.POSITIVE_INFINITY;
 	var currentBestIndex=-1;
@@ -1699,7 +1749,7 @@ function getClosestPointFromTime(point, nativeTC, forward, margin) {
 			current=P-time;
 		else
 			current=time-P;
-			
+			 
 		if (current > (0.0 + margin) && current < currentBest) {
 			currentBest=current;
 			currentBestIndex=i;
@@ -1763,15 +1813,19 @@ function processKeyboardInput(event) {
 		break;
 		case 190: // . and > key
 			if (videoTag.getAttribute("ctrlKey") == "true")
-				BTNclearInPoint(event); 
+				BTNclearOutPoint(event); 
 		break;
 		
 		case 189: // - key
-			if (videoTag.getAttribute("ctrlKey") == "true")
+			if (videoTag.getAttribute("ctrlKey") != "true")
+				break;
+		case 109: // - key on numeric keypad		
 				slowDownVideo();
-		break;		
+		break;	
 		case 187: // + key
-			if (videoTag.getAttribute("ctrlKey") == "true")
+			if (videoTag.getAttribute("ctrlKey") != "true")
+				break;
+		case 107: // + key on numeric keypad					
 				speedUpVideo()		
 		break;
 						
@@ -1884,14 +1938,6 @@ function processEnter(event) {
 		}
 	
 		BTNaddSubtitle();
-/*		var tempOut=getTimecode("OUT", 0);
-		createUndoState("STARTBUFFER", 0, true);			
-		createUndoState("CU", 0, true, true);
-		addSub(-1, true, true);
-		// TODO: Add a flag so the user can enable/disable automatically setting this IN point after adding a subtitle
-		setTimecode("IN", 0, tempOut, false);	
-		createUndoState("CR", 0, true, true);		
-		createUndoState("ENDBUFFER", 0, true);	*/	
 	}
 }
 function processUpArrow(event) {
@@ -2011,7 +2057,7 @@ function processLeftArrow(event) {
 	var videoTag = document.getElementById("video");
 	var time=videoTag.currentTime;
 	
-	var index=getClosestPointFromTime("IN", time, false, 1.0);
+	var index=getClosestPointFromTime("IN", time, false);
 	if (index != -1) {
 		videoTag.currentTime=getTimecodeNative("IN", index);
 	}

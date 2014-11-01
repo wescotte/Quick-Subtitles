@@ -18,14 +18,15 @@ not, see http://www.gnu.org/licenses/.
 
 <html>
 <head>
-<title>QuickSubs 1.0</title>
+<title>Quick Subtitles 1.0</title>
 </head>
 
+<!--- EMBEDED ELEMENTS --->
 <link rel="icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAACXBIWXMAAAsTAAALEwEAmpwYAAADGGlDQ1BQaG90b3Nob3AgSUNDIHByb2ZpbGUAAHjaY2BgnuDo4uTKJMDAUFBUUuQe5BgZERmlwH6egY2BmYGBgYGBITG5uMAxIMCHgYGBIS8/L5UBFTAyMHy7xsDIwMDAcFnX0cXJlYE0wJpcUFTCwMBwgIGBwSgltTiZgYHhCwMDQ3p5SUEJAwNjDAMDg0hSdkEJAwNjAQMDg0h2SJAzAwNjCwMDE09JakUJAwMDg3N+QWVRZnpGiYKhpaWlgmNKflKqQnBlcUlqbrGCZ15yflFBflFiSWoKAwMD1A4GBgYGXpf8EgX3xMw8BSMDVQYqg4jIKAUICxE+CDEESC4tKoMHJQODAIMCgwGDA0MAQyJDPcMChqMMbxjFGV0YSxlXMN5jEmMKYprAdIFZmDmSeSHzGxZLlg6WW6x6rK2s99gs2aaxfWMPZ9/NocTRxfGFM5HzApcj1xZuTe4FPFI8U3mFeCfxCfNN45fhXyygI7BD0FXwilCq0A/hXhEVkb2i4aJfxCaJG4lfkaiQlJM8JpUvLS19QqZMVl32llyfvIv8H4WtioVKekpvldeqFKiaqP5UO6jepRGqqaT5QeuA9iSdVF0rPUG9V/pHDBYY1hrFGNuayJsym740u2C+02KJ5QSrOutcmzjbQDtXe2sHY0cdJzVnJRcFV3k3BXdlD3VPXS8Tbxsfd99gvwT//ID6wIlBS4N3hVwMfRnOFCEXaRUVEV0RMzN2T9yDBLZE3aSw5IaUNak30zkyLDIzs+ZmX8xlz7PPryjYVPiuWLskq3RV2ZsK/cqSql01jLVedVPrHzbqNdU0n22VaytsP9op3VXUfbpXta+x/+5Em0mzJ/+dGj/t8AyNmf2zvs9JmHt6vvmCpYtEFrcu+bYsc/m9lSGrTq9xWbtvveWGbZtMNm/ZarJt+w6rnft3u+45uy9s/4ODOYd+Hmk/Jn58xUnrU+fOJJ/9dX7SRe1LR68kXv13fc5Nm1t379TfU75/4mHeY7En+59lvhB5efB1/lv5dxc+NH0y/fzq64Lv4T8Ffp360/rP8f9/AA0ADzT6lvFdAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAE5SURBVCjPfdExS9UBGIXx125dbyFZ3EQFUZJAEaELCg2VqI19gOo7RLlIrUU5mUhb1BDhIE43DNREi3RJoiAJ+hby6nrz1/C/Cg51zvoMD+fE657ZtVtZy548l+Us5eks59nszqs5kXOf6pfj8Vb4dx/8iPFGCFXzNk0L4b5174wK4ZqoHYSSz4rcNekoF4Sh/ejLUMWhXXzwCgv2cV3oyGjP0I2Gj1j2FssemtEvVDJaM3Tijy9YMg3eNCVbMs40gYYtfHPKLPiuIkRG6QTwW7thO2CsAFozdB071M3jhRXcKYDzGS6CXax4jrpN3CskezO0eA/2DLhyvMOgcCmjdhBCm2dgRrht0aJJUQx1s3G0+0vbNpROfDEiHu3876ypX7Ha/3R7LIeyI8sZzVaymoN5I598/TnwF4+tV+wyb2/xAAAAAElFTkSuQmCC" />
 
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
 	 width="27px" height="12.5px" viewBox="0 0 108.167 50" style="display:none">
-	<symbol id="SYM_metaKey" width="27px" height="12.5px" viewBox="0 0 108.167 50">	 
+	<symbol id="SYM_metaKey">	 
 		<g>
 			<path fill="#010101" d="M22.706,24.997c-2.363-1.215-4.661-1.832-6.831-1.832c-0.295,0-0.592,0.009-0.889,0.035
 				c-2.769,0.229-5.297,0.959-6.923,1.527c-0.431,0.159-0.874,0.326-1.329,0.512l-4.45,15.425c3.056-1.131,5.761-1.682,8.237-1.682
@@ -59,6 +60,8 @@ not, see http://www.gnu.org/licenses/.
 		</g>
 	</symbol>
 </svg>
+
+<!--- END OF EMBEDED ELEMENTS --->
 
 <link href="QuickSubs.css" rel="stylesheet" type="text/css">
 
@@ -114,7 +117,7 @@ not, see http://www.gnu.org/licenses/.
 				</tr>					
 				<tr> 
 					<td class="keyboardInputA">
-						<kbd>ESCAPE</kbd>
+						<kbd>ESC</kbd>
 					</td> 
 					<td class="behaviorA">
 						<p> Toggle video play state: Pause the video if playing and play the video if paused.<br/>
@@ -137,7 +140,7 @@ not, see http://www.gnu.org/licenses/.
 						<kbd>CTRL</kbd> + <kbd>]</kbd>
 					</td> 
 					<td class="behaviorA"> 
-						<p>Set OUT POINT to the current frame of the video.<br/><br/>You can also set the OUT POINT when you hit enter in the subtitle entry box/p>
+						<p>Set OUT POINT to the current frame of the video.<br/><br/>You can also set the OUT POINT when you hit enter in the subtitle entry box</p>
 					</td>	
 				</tr>
 				<tr>
@@ -178,7 +181,7 @@ not, see http://www.gnu.org/licenses/.
 				</tr>							
 				<tr>
 					<td class="keyboardInputB">
-						<kbd> <svg> <use xlink:href="#SYM_metaKey"/> </svg> </kbd> + <kbd>&larr;</kbd>
+						<kbd> <svg width="27px" height="12.5px" viewBox="0 0 108.167 50"> <use xlink:href="#SYM_metaKey"/> </svg> </kbd> + <kbd>&larr;</kbd> 
 					</td> 
 					<td class="behaviorB"> 
 						<p>Move the playhead to the previous IN POINT.
@@ -187,42 +190,7 @@ not, see http://www.gnu.org/licenses/.
 				</tr>
 				<tr>
 					<td class="keyboardInputA">
-						<kbd>
-							<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-								 width="27px" height="12.5px" viewBox="0 0 108.167 50" enable-background="new 0 0 108.167 50" xml:space="preserve">
-							<g>
-								<path fill="#010101" d="M22.706,24.997c-2.363-1.215-4.661-1.832-6.831-1.832c-0.295,0-0.592,0.009-0.889,0.035
-									c-2.769,0.229-5.297,0.959-6.923,1.527c-0.431,0.159-0.874,0.326-1.329,0.512l-4.45,15.425c3.056-1.131,5.761-1.682,8.237-1.682
-									c4.005,0,6.912,1.496,9.313,3.037c1.138-3.859,3.866-13.182,4.681-15.969C23.923,25.691,23.322,25.331,22.706,24.997z"/>
-								<path fill="#010101" d="M28.458,28.918l-4.48,15.562c1.329,0.76,5.801,3.172,9.225,3.172c2.764,0,5.858-0.707,9.454-2.168
-									l4.278-14.961c-2.905,0.938-5.691,1.412-8.296,1.412C33.885,31.936,30.558,30.396,28.458,28.918z"/>
-								<path fill="#010101" d="M16.791,17.906c3.82,0.039,6.646,1.496,8.987,2.997l4.595-15.721c-0.968-0.555-3.508-1.937-5.343-2.408
-									c-1.208-0.282-2.478-0.427-3.825-0.427c-2.566,0.048-5.37,0.691-8.564,1.971L8.259,19.706c3.21-1.21,5.977-1.8,8.525-1.8
-									C16.786,17.906,16.791,17.906,16.791,17.906z"/>
-								<path fill="#010101" d="M53.012,9.451c-2.914,1.131-5.757,1.708-8.473,1.708c-4.542,0-7.891-1.575-10.061-3.089l-4.556,15.765
-									c3.059,1.967,6.356,2.966,9.815,2.966c2.821,0,5.744-0.678,8.692-2.016l-0.009-0.11l0.185-0.044L53.012,9.451z"/>
-							</g>
-							<g>
-								<path fill="#010101" d="M78.96,33.702v4.928c0,2.482-0.898,4.605-2.691,6.373c-1.794,1.768-3.953,2.65-6.479,2.65
-									c-2.524,0-4.678-0.889-6.458-2.67s-2.67-3.939-2.67-6.479c0-2.484,0.891-4.621,2.67-6.42c1.78-1.791,3.897-2.688,6.355-2.688h4.969
-									v-8.612h-4.969c-2.458,0-4.575-0.897-6.355-2.691c-1.78-1.794-2.67-3.947-2.67-6.458c0-2.511,0.891-4.657,2.67-6.438
-									c1.78-1.779,3.933-2.67,6.458-2.67c2.526,0,4.686,0.883,6.479,2.65c1.793,1.766,2.691,3.891,2.691,6.375v4.926h8.568v-4.926
-									c0-2.484,0.897-4.609,2.691-6.375c1.793-1.767,3.959-2.65,6.5-2.65c2.539,0,4.69,0.891,6.457,2.67
-									c1.767,1.781,2.65,3.927,2.65,6.438c0,2.511-0.884,4.663-2.65,6.458c-1.767,1.794-3.891,2.691-6.374,2.691h-4.969v8.612h4.969
-									c2.483,0,4.607,0.896,6.374,2.688c1.767,1.799,2.65,3.936,2.65,6.42c0,2.539-0.884,4.697-2.65,6.479s-3.918,2.67-6.457,2.67
-									c-2.541,0-4.707-0.883-6.5-2.65c-1.794-1.768-2.691-3.891-2.691-6.373v-4.928H78.96z M74.655,16.48v-4.843
-									c0-1.325-0.477-2.464-1.43-3.416c-0.952-0.952-2.105-1.428-3.456-1.428c-1.297,0-2.423,0.476-3.374,1.428
-									c-0.953,0.952-1.429,2.09-1.429,3.416c0,1.324,0.476,2.462,1.429,3.415c0.951,0.952,2.09,1.429,3.415,1.429H74.655L74.655,16.48z
-									 M74.655,33.702h-4.845c-1.324,0-2.463,0.477-3.415,1.43c-0.953,0.949-1.429,2.074-1.429,3.373c0,1.352,0.476,2.504,1.429,3.457
-									c0.952,0.951,2.09,1.428,3.415,1.428c1.326,0,2.463-0.477,3.415-1.428c0.953-0.953,1.43-2.094,1.43-3.416V33.702L74.655,33.702z
-									 M78.96,29.397h8.568v-8.612H78.96V29.397z M91.834,16.48h4.886c1.296,0,2.42-0.477,3.373-1.429s1.43-2.091,1.43-3.415
-									c0-1.326-0.472-2.464-1.408-3.416c-0.938-0.952-2.078-1.428-3.415-1.428c-1.339,0-2.485,0.476-3.438,1.428s-1.428,2.09-1.428,3.416
-									V16.48L91.834,16.48z M91.834,33.702v4.844c0,1.322,0.476,2.463,1.428,3.416c0.952,0.951,2.099,1.428,3.438,1.428
-									c1.338,0,2.477-0.477,3.415-1.428c0.937-0.953,1.408-2.105,1.408-3.457c0-1.299-0.477-2.424-1.43-3.373
-									c-0.953-0.953-2.077-1.43-3.373-1.43H91.834z"/>
-							</g>
-							</svg>							
-						</kbd> + <kbd>&rarr;</kbd>
+						<kbd> <svg width="27px" height="12.5px" viewBox="0 0 108.167 50"> <use xlink:href="#SYM_metaKey"/> </svg> </kbd> + <kbd>&rarr;</kbd>
 					</td> 
 					<td class="behaviorA"> 
 						<p>Move the playhead to the next IN POINT. 
@@ -231,128 +199,25 @@ not, see http://www.gnu.org/licenses/.
 				</tr>
 				<tr>
 					<td class="keyboardInputB">
-						<kbd>
-							<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-								 width="27px" height="12.5px" viewBox="0 0 108.167 50" enable-background="new 0 0 108.167 50" xml:space="preserve">
-							<g>
-								<path fill="#010101" d="M22.706,24.997c-2.363-1.215-4.661-1.832-6.831-1.832c-0.295,0-0.592,0.009-0.889,0.035
-									c-2.769,0.229-5.297,0.959-6.923,1.527c-0.431,0.159-0.874,0.326-1.329,0.512l-4.45,15.425c3.056-1.131,5.761-1.682,8.237-1.682
-									c4.005,0,6.912,1.496,9.313,3.037c1.138-3.859,3.866-13.182,4.681-15.969C23.923,25.691,23.322,25.331,22.706,24.997z"/>
-								<path fill="#010101" d="M28.458,28.918l-4.48,15.562c1.329,0.76,5.801,3.172,9.225,3.172c2.764,0,5.858-0.707,9.454-2.168
-									l4.278-14.961c-2.905,0.938-5.691,1.412-8.296,1.412C33.885,31.936,30.558,30.396,28.458,28.918z"/>
-								<path fill="#010101" d="M16.791,17.906c3.82,0.039,6.646,1.496,8.987,2.997l4.595-15.721c-0.968-0.555-3.508-1.937-5.343-2.408
-									c-1.208-0.282-2.478-0.427-3.825-0.427c-2.566,0.048-5.37,0.691-8.564,1.971L8.259,19.706c3.21-1.21,5.977-1.8,8.525-1.8
-									C16.786,17.906,16.791,17.906,16.791,17.906z"/>
-								<path fill="#010101" d="M53.012,9.451c-2.914,1.131-5.757,1.708-8.473,1.708c-4.542,0-7.891-1.575-10.061-3.089l-4.556,15.765
-									c3.059,1.967,6.356,2.966,9.815,2.966c2.821,0,5.744-0.678,8.692-2.016l-0.009-0.11l0.185-0.044L53.012,9.451z"/>
-							</g>
-							<g>
-								<path fill="#010101" d="M78.96,33.702v4.928c0,2.482-0.898,4.605-2.691,6.373c-1.794,1.768-3.953,2.65-6.479,2.65
-									c-2.524,0-4.678-0.889-6.458-2.67s-2.67-3.939-2.67-6.479c0-2.484,0.891-4.621,2.67-6.42c1.78-1.791,3.897-2.688,6.355-2.688h4.969
-									v-8.612h-4.969c-2.458,0-4.575-0.897-6.355-2.691c-1.78-1.794-2.67-3.947-2.67-6.458c0-2.511,0.891-4.657,2.67-6.438
-									c1.78-1.779,3.933-2.67,6.458-2.67c2.526,0,4.686,0.883,6.479,2.65c1.793,1.766,2.691,3.891,2.691,6.375v4.926h8.568v-4.926
-									c0-2.484,0.897-4.609,2.691-6.375c1.793-1.767,3.959-2.65,6.5-2.65c2.539,0,4.69,0.891,6.457,2.67
-									c1.767,1.781,2.65,3.927,2.65,6.438c0,2.511-0.884,4.663-2.65,6.458c-1.767,1.794-3.891,2.691-6.374,2.691h-4.969v8.612h4.969
-									c2.483,0,4.607,0.896,6.374,2.688c1.767,1.799,2.65,3.936,2.65,6.42c0,2.539-0.884,4.697-2.65,6.479s-3.918,2.67-6.457,2.67
-									c-2.541,0-4.707-0.883-6.5-2.65c-1.794-1.768-2.691-3.891-2.691-6.373v-4.928H78.96z M74.655,16.48v-4.843
-									c0-1.325-0.477-2.464-1.43-3.416c-0.952-0.952-2.105-1.428-3.456-1.428c-1.297,0-2.423,0.476-3.374,1.428
-									c-0.953,0.952-1.429,2.09-1.429,3.416c0,1.324,0.476,2.462,1.429,3.415c0.951,0.952,2.09,1.429,3.415,1.429H74.655L74.655,16.48z
-									 M74.655,33.702h-4.845c-1.324,0-2.463,0.477-3.415,1.43c-0.953,0.949-1.429,2.074-1.429,3.373c0,1.352,0.476,2.504,1.429,3.457
-									c0.952,0.951,2.09,1.428,3.415,1.428c1.326,0,2.463-0.477,3.415-1.428c0.953-0.953,1.43-2.094,1.43-3.416V33.702L74.655,33.702z
-									 M78.96,29.397h8.568v-8.612H78.96V29.397z M91.834,16.48h4.886c1.296,0,2.42-0.477,3.373-1.429s1.43-2.091,1.43-3.415
-									c0-1.326-0.472-2.464-1.408-3.416c-0.938-0.952-2.078-1.428-3.415-1.428c-1.339,0-2.485,0.476-3.438,1.428s-1.428,2.09-1.428,3.416
-									V16.48L91.834,16.48z M91.834,33.702v4.844c0,1.322,0.476,2.463,1.428,3.416c0.952,0.951,2.099,1.428,3.438,1.428
-									c1.338,0,2.477-0.477,3.415-1.428c0.937-0.953,1.408-2.105,1.408-3.457c0-1.299-0.477-2.424-1.43-3.373
-									c-0.953-0.953-2.077-1.43-3.373-1.43H91.834z"/>
-							</g>
-							</svg>								
-						</kbd> + <kbd style="font-size:.6em;text-align:center;font-weight: bold;">Page<br/>Up</kbd></br>
+						<kbd> <svg width="27px" height="12.5px" viewBox="0 0 108.167 50"> <use xlink:href="#SYM_metaKey"/> </svg> </kbd> + 
+						<kbd style="font-size:.6em;text-align:center;font-weight: bold;">Page<br/>Up</kbd></br>
 					</td> 
 					<td class="behaviorB"> 
-						<p>Undo last action. You can also use <kbd>F2</kbd></p>
+						<p>Undo last action.<br/>Alt keyboard shortcut is <kbd>F2</kbd></p>
 					</td>	
 				</tr>
 				<tr>
 					<td class="keyboardInputA">
-						<kbd>
-							<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-								 width="27px" height="12.5px" viewBox="0 0 108.167 50" enable-background="new 0 0 108.167 50" xml:space="preserve">
-							<g>
-								<path fill="#010101" d="M22.706,24.997c-2.363-1.215-4.661-1.832-6.831-1.832c-0.295,0-0.592,0.009-0.889,0.035
-									c-2.769,0.229-5.297,0.959-6.923,1.527c-0.431,0.159-0.874,0.326-1.329,0.512l-4.45,15.425c3.056-1.131,5.761-1.682,8.237-1.682
-									c4.005,0,6.912,1.496,9.313,3.037c1.138-3.859,3.866-13.182,4.681-15.969C23.923,25.691,23.322,25.331,22.706,24.997z"/>
-								<path fill="#010101" d="M28.458,28.918l-4.48,15.562c1.329,0.76,5.801,3.172,9.225,3.172c2.764,0,5.858-0.707,9.454-2.168
-									l4.278-14.961c-2.905,0.938-5.691,1.412-8.296,1.412C33.885,31.936,30.558,30.396,28.458,28.918z"/>
-								<path fill="#010101" d="M16.791,17.906c3.82,0.039,6.646,1.496,8.987,2.997l4.595-15.721c-0.968-0.555-3.508-1.937-5.343-2.408
-									c-1.208-0.282-2.478-0.427-3.825-0.427c-2.566,0.048-5.37,0.691-8.564,1.971L8.259,19.706c3.21-1.21,5.977-1.8,8.525-1.8
-									C16.786,17.906,16.791,17.906,16.791,17.906z"/>
-								<path fill="#010101" d="M53.012,9.451c-2.914,1.131-5.757,1.708-8.473,1.708c-4.542,0-7.891-1.575-10.061-3.089l-4.556,15.765
-									c3.059,1.967,6.356,2.966,9.815,2.966c2.821,0,5.744-0.678,8.692-2.016l-0.009-0.11l0.185-0.044L53.012,9.451z"/>
-							</g>
-							<g>
-								<path fill="#010101" d="M78.96,33.702v4.928c0,2.482-0.898,4.605-2.691,6.373c-1.794,1.768-3.953,2.65-6.479,2.65
-									c-2.524,0-4.678-0.889-6.458-2.67s-2.67-3.939-2.67-6.479c0-2.484,0.891-4.621,2.67-6.42c1.78-1.791,3.897-2.688,6.355-2.688h4.969
-									v-8.612h-4.969c-2.458,0-4.575-0.897-6.355-2.691c-1.78-1.794-2.67-3.947-2.67-6.458c0-2.511,0.891-4.657,2.67-6.438
-									c1.78-1.779,3.933-2.67,6.458-2.67c2.526,0,4.686,0.883,6.479,2.65c1.793,1.766,2.691,3.891,2.691,6.375v4.926h8.568v-4.926
-									c0-2.484,0.897-4.609,2.691-6.375c1.793-1.767,3.959-2.65,6.5-2.65c2.539,0,4.69,0.891,6.457,2.67
-									c1.767,1.781,2.65,3.927,2.65,6.438c0,2.511-0.884,4.663-2.65,6.458c-1.767,1.794-3.891,2.691-6.374,2.691h-4.969v8.612h4.969
-									c2.483,0,4.607,0.896,6.374,2.688c1.767,1.799,2.65,3.936,2.65,6.42c0,2.539-0.884,4.697-2.65,6.479s-3.918,2.67-6.457,2.67
-									c-2.541,0-4.707-0.883-6.5-2.65c-1.794-1.768-2.691-3.891-2.691-6.373v-4.928H78.96z M74.655,16.48v-4.843
-									c0-1.325-0.477-2.464-1.43-3.416c-0.952-0.952-2.105-1.428-3.456-1.428c-1.297,0-2.423,0.476-3.374,1.428
-									c-0.953,0.952-1.429,2.09-1.429,3.416c0,1.324,0.476,2.462,1.429,3.415c0.951,0.952,2.09,1.429,3.415,1.429H74.655L74.655,16.48z
-									 M74.655,33.702h-4.845c-1.324,0-2.463,0.477-3.415,1.43c-0.953,0.949-1.429,2.074-1.429,3.373c0,1.352,0.476,2.504,1.429,3.457
-									c0.952,0.951,2.09,1.428,3.415,1.428c1.326,0,2.463-0.477,3.415-1.428c0.953-0.953,1.43-2.094,1.43-3.416V33.702L74.655,33.702z
-									 M78.96,29.397h8.568v-8.612H78.96V29.397z M91.834,16.48h4.886c1.296,0,2.42-0.477,3.373-1.429s1.43-2.091,1.43-3.415
-									c0-1.326-0.472-2.464-1.408-3.416c-0.938-0.952-2.078-1.428-3.415-1.428c-1.339,0-2.485,0.476-3.438,1.428s-1.428,2.09-1.428,3.416
-									V16.48L91.834,16.48z M91.834,33.702v4.844c0,1.322,0.476,2.463,1.428,3.416c0.952,0.951,2.099,1.428,3.438,1.428
-									c1.338,0,2.477-0.477,3.415-1.428c0.937-0.953,1.408-2.105,1.408-3.457c0-1.299-0.477-2.424-1.43-3.373
-									c-0.953-0.953-2.077-1.43-3.373-1.43H91.834z"/>
-							</g>
-							</svg>							
-						</kbd> + <kbd style="font-size:.6em;text-align:center;font-weight: bold;">Page<br/>Down</kbd>
+						<kbd> <svg width="27px" height="12.5px" viewBox="0 0 108.167 50"> <use xlink:href="#SYM_metaKey"/> </svg> </kbd> +
+						<kbd style="font-size:.6em;text-align:center;font-weight: bold;">Page<br/>Down</kbd>
 					</td> 
 					<td class="behaviorA"> 
-						<p>Redo last action. You can also use <kbd>F3</kbd></p>
+						<p>Redo last action.<br/>Alt keyboard shortcut is <kbd>F3</kbd></p>
 					</td>	
 				</tr>						
 				<tr>
 					<td class="keyboardInputB">
-						<kbd>
-							<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-								 width="27px" height="12.5px" viewBox="0 0 108.167 50" enable-background="new 0 0 108.167 50" xml:space="preserve">
-							<g>
-								<path fill="#010101" d="M22.706,24.997c-2.363-1.215-4.661-1.832-6.831-1.832c-0.295,0-0.592,0.009-0.889,0.035
-									c-2.769,0.229-5.297,0.959-6.923,1.527c-0.431,0.159-0.874,0.326-1.329,0.512l-4.45,15.425c3.056-1.131,5.761-1.682,8.237-1.682
-									c4.005,0,6.912,1.496,9.313,3.037c1.138-3.859,3.866-13.182,4.681-15.969C23.923,25.691,23.322,25.331,22.706,24.997z"/>
-								<path fill="#010101" d="M28.458,28.918l-4.48,15.562c1.329,0.76,5.801,3.172,9.225,3.172c2.764,0,5.858-0.707,9.454-2.168
-									l4.278-14.961c-2.905,0.938-5.691,1.412-8.296,1.412C33.885,31.936,30.558,30.396,28.458,28.918z"/>
-								<path fill="#010101" d="M16.791,17.906c3.82,0.039,6.646,1.496,8.987,2.997l4.595-15.721c-0.968-0.555-3.508-1.937-5.343-2.408
-									c-1.208-0.282-2.478-0.427-3.825-0.427c-2.566,0.048-5.37,0.691-8.564,1.971L8.259,19.706c3.21-1.21,5.977-1.8,8.525-1.8
-									C16.786,17.906,16.791,17.906,16.791,17.906z"/>
-								<path fill="#010101" d="M53.012,9.451c-2.914,1.131-5.757,1.708-8.473,1.708c-4.542,0-7.891-1.575-10.061-3.089l-4.556,15.765
-									c3.059,1.967,6.356,2.966,9.815,2.966c2.821,0,5.744-0.678,8.692-2.016l-0.009-0.11l0.185-0.044L53.012,9.451z"/>
-							</g>
-							<g>
-								<path fill="#010101" d="M78.96,33.702v4.928c0,2.482-0.898,4.605-2.691,6.373c-1.794,1.768-3.953,2.65-6.479,2.65
-									c-2.524,0-4.678-0.889-6.458-2.67s-2.67-3.939-2.67-6.479c0-2.484,0.891-4.621,2.67-6.42c1.78-1.791,3.897-2.688,6.355-2.688h4.969
-									v-8.612h-4.969c-2.458,0-4.575-0.897-6.355-2.691c-1.78-1.794-2.67-3.947-2.67-6.458c0-2.511,0.891-4.657,2.67-6.438
-									c1.78-1.779,3.933-2.67,6.458-2.67c2.526,0,4.686,0.883,6.479,2.65c1.793,1.766,2.691,3.891,2.691,6.375v4.926h8.568v-4.926
-									c0-2.484,0.897-4.609,2.691-6.375c1.793-1.767,3.959-2.65,6.5-2.65c2.539,0,4.69,0.891,6.457,2.67
-									c1.767,1.781,2.65,3.927,2.65,6.438c0,2.511-0.884,4.663-2.65,6.458c-1.767,1.794-3.891,2.691-6.374,2.691h-4.969v8.612h4.969
-									c2.483,0,4.607,0.896,6.374,2.688c1.767,1.799,2.65,3.936,2.65,6.42c0,2.539-0.884,4.697-2.65,6.479s-3.918,2.67-6.457,2.67
-									c-2.541,0-4.707-0.883-6.5-2.65c-1.794-1.768-2.691-3.891-2.691-6.373v-4.928H78.96z M74.655,16.48v-4.843
-									c0-1.325-0.477-2.464-1.43-3.416c-0.952-0.952-2.105-1.428-3.456-1.428c-1.297,0-2.423,0.476-3.374,1.428
-									c-0.953,0.952-1.429,2.09-1.429,3.416c0,1.324,0.476,2.462,1.429,3.415c0.951,0.952,2.09,1.429,3.415,1.429H74.655L74.655,16.48z
-									 M74.655,33.702h-4.845c-1.324,0-2.463,0.477-3.415,1.43c-0.953,0.949-1.429,2.074-1.429,3.373c0,1.352,0.476,2.504,1.429,3.457
-									c0.952,0.951,2.09,1.428,3.415,1.428c1.326,0,2.463-0.477,3.415-1.428c0.953-0.953,1.43-2.094,1.43-3.416V33.702L74.655,33.702z
-									 M78.96,29.397h8.568v-8.612H78.96V29.397z M91.834,16.48h4.886c1.296,0,2.42-0.477,3.373-1.429s1.43-2.091,1.43-3.415
-									c0-1.326-0.472-2.464-1.408-3.416c-0.938-0.952-2.078-1.428-3.415-1.428c-1.339,0-2.485,0.476-3.438,1.428s-1.428,2.09-1.428,3.416
-									V16.48L91.834,16.48z M91.834,33.702v4.844c0,1.322,0.476,2.463,1.428,3.416c0.952,0.951,2.099,1.428,3.438,1.428
-									c1.338,0,2.477-0.477,3.415-1.428c0.937-0.953,1.408-2.105,1.408-3.457c0-1.299-0.477-2.424-1.43-3.373
-									c-0.953-0.953-2.077-1.43-3.373-1.43H91.834z"/>
-							</g>
-							</svg>							
-						</kbd> + <kbd>&darr;</kbd>
+						<kbd> <svg width="27px" height="12.5px" viewBox="0 0 108.167 50"> <use xlink:href="#SYM_metaKey"/> </svg> </kbd> + <kbd>&darr;</kbd>
 					</td> 
 					<td class="behaviorB"> 
 						<p>Adjusts the IN POINT of the nearest subtitle based on the current frame of the video. There are two cases on how this works<br/><br/>
@@ -476,42 +341,7 @@ not, see http://www.gnu.org/licenses/.
 				</tr>			
 				<tr>
 					<td class="keyboardInputA">
-						<kbd>
-							<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-								 width="27px" height="12.5px" viewBox="0 0 108.167 50" enable-background="new 0 0 108.167 50" xml:space="preserve">
-							<g>
-								<path fill="#010101" d="M22.706,24.997c-2.363-1.215-4.661-1.832-6.831-1.832c-0.295,0-0.592,0.009-0.889,0.035
-									c-2.769,0.229-5.297,0.959-6.923,1.527c-0.431,0.159-0.874,0.326-1.329,0.512l-4.45,15.425c3.056-1.131,5.761-1.682,8.237-1.682
-									c4.005,0,6.912,1.496,9.313,3.037c1.138-3.859,3.866-13.182,4.681-15.969C23.923,25.691,23.322,25.331,22.706,24.997z"/>
-								<path fill="#010101" d="M28.458,28.918l-4.48,15.562c1.329,0.76,5.801,3.172,9.225,3.172c2.764,0,5.858-0.707,9.454-2.168
-									l4.278-14.961c-2.905,0.938-5.691,1.412-8.296,1.412C33.885,31.936,30.558,30.396,28.458,28.918z"/>
-								<path fill="#010101" d="M16.791,17.906c3.82,0.039,6.646,1.496,8.987,2.997l4.595-15.721c-0.968-0.555-3.508-1.937-5.343-2.408
-									c-1.208-0.282-2.478-0.427-3.825-0.427c-2.566,0.048-5.37,0.691-8.564,1.971L8.259,19.706c3.21-1.21,5.977-1.8,8.525-1.8
-									C16.786,17.906,16.791,17.906,16.791,17.906z"/>
-								<path fill="#010101" d="M53.012,9.451c-2.914,1.131-5.757,1.708-8.473,1.708c-4.542,0-7.891-1.575-10.061-3.089l-4.556,15.765
-									c3.059,1.967,6.356,2.966,9.815,2.966c2.821,0,5.744-0.678,8.692-2.016l-0.009-0.11l0.185-0.044L53.012,9.451z"/>
-							</g>
-							<g>
-								<path fill="#010101" d="M78.96,33.702v4.928c0,2.482-0.898,4.605-2.691,6.373c-1.794,1.768-3.953,2.65-6.479,2.65
-									c-2.524,0-4.678-0.889-6.458-2.67s-2.67-3.939-2.67-6.479c0-2.484,0.891-4.621,2.67-6.42c1.78-1.791,3.897-2.688,6.355-2.688h4.969
-									v-8.612h-4.969c-2.458,0-4.575-0.897-6.355-2.691c-1.78-1.794-2.67-3.947-2.67-6.458c0-2.511,0.891-4.657,2.67-6.438
-									c1.78-1.779,3.933-2.67,6.458-2.67c2.526,0,4.686,0.883,6.479,2.65c1.793,1.766,2.691,3.891,2.691,6.375v4.926h8.568v-4.926
-									c0-2.484,0.897-4.609,2.691-6.375c1.793-1.767,3.959-2.65,6.5-2.65c2.539,0,4.69,0.891,6.457,2.67
-									c1.767,1.781,2.65,3.927,2.65,6.438c0,2.511-0.884,4.663-2.65,6.458c-1.767,1.794-3.891,2.691-6.374,2.691h-4.969v8.612h4.969
-									c2.483,0,4.607,0.896,6.374,2.688c1.767,1.799,2.65,3.936,2.65,6.42c0,2.539-0.884,4.697-2.65,6.479s-3.918,2.67-6.457,2.67
-									c-2.541,0-4.707-0.883-6.5-2.65c-1.794-1.768-2.691-3.891-2.691-6.373v-4.928H78.96z M74.655,16.48v-4.843
-									c0-1.325-0.477-2.464-1.43-3.416c-0.952-0.952-2.105-1.428-3.456-1.428c-1.297,0-2.423,0.476-3.374,1.428
-									c-0.953,0.952-1.429,2.09-1.429,3.416c0,1.324,0.476,2.462,1.429,3.415c0.951,0.952,2.09,1.429,3.415,1.429H74.655L74.655,16.48z
-									 M74.655,33.702h-4.845c-1.324,0-2.463,0.477-3.415,1.43c-0.953,0.949-1.429,2.074-1.429,3.373c0,1.352,0.476,2.504,1.429,3.457
-									c0.952,0.951,2.09,1.428,3.415,1.428c1.326,0,2.463-0.477,3.415-1.428c0.953-0.953,1.43-2.094,1.43-3.416V33.702L74.655,33.702z
-									 M78.96,29.397h8.568v-8.612H78.96V29.397z M91.834,16.48h4.886c1.296,0,2.42-0.477,3.373-1.429s1.43-2.091,1.43-3.415
-									c0-1.326-0.472-2.464-1.408-3.416c-0.938-0.952-2.078-1.428-3.415-1.428c-1.339,0-2.485,0.476-3.438,1.428s-1.428,2.09-1.428,3.416
-									V16.48L91.834,16.48z M91.834,33.702v4.844c0,1.322,0.476,2.463,1.428,3.416c0.952,0.951,2.099,1.428,3.438,1.428
-									c1.338,0,2.477-0.477,3.415-1.428c0.937-0.953,1.408-2.105,1.408-3.457c0-1.299-0.477-2.424-1.43-3.373
-									c-0.953-0.953-2.077-1.43-3.373-1.43H91.834z"/>
-							</g>
-							</svg>							
-						</kbd> + <kbd>&uarr;</kbd>
+						<kbd> <svg width="27px" height="12.5px" viewBox="0 0 108.167 50"> <use xlink:href="#SYM_metaKey"/> </svg> </kbd> + <kbd>&uarr;</kbd>
 					</td> 
 					<td class="behaviorA"> 
 						<p>Adjusts the OUT POINT of the nearest subtitle based on the current frame of the video. There are two cases on how this works<br/><br/>
@@ -639,43 +469,9 @@ not, see http://www.gnu.org/licenses/.
 						<kbd>ALT</kbd> + <kbd>&darr;</kbd>
 					</td>
 					<td class="behaviorB">
-						<p>	Same behavior as <kbd>
-							<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-								 width="27px" height="12.5px" viewBox="0 0 108.167 50" enable-background="new 0 0 108.167 50" xml:space="preserve">
-							<g>
-								<path fill="#010101" d="M22.706,24.997c-2.363-1.215-4.661-1.832-6.831-1.832c-0.295,0-0.592,0.009-0.889,0.035
-									c-2.769,0.229-5.297,0.959-6.923,1.527c-0.431,0.159-0.874,0.326-1.329,0.512l-4.45,15.425c3.056-1.131,5.761-1.682,8.237-1.682
-									c4.005,0,6.912,1.496,9.313,3.037c1.138-3.859,3.866-13.182,4.681-15.969C23.923,25.691,23.322,25.331,22.706,24.997z"/>
-								<path fill="#010101" d="M28.458,28.918l-4.48,15.562c1.329,0.76,5.801,3.172,9.225,3.172c2.764,0,5.858-0.707,9.454-2.168
-									l4.278-14.961c-2.905,0.938-5.691,1.412-8.296,1.412C33.885,31.936,30.558,30.396,28.458,28.918z"/>
-								<path fill="#010101" d="M16.791,17.906c3.82,0.039,6.646,1.496,8.987,2.997l4.595-15.721c-0.968-0.555-3.508-1.937-5.343-2.408
-									c-1.208-0.282-2.478-0.427-3.825-0.427c-2.566,0.048-5.37,0.691-8.564,1.971L8.259,19.706c3.21-1.21,5.977-1.8,8.525-1.8
-									C16.786,17.906,16.791,17.906,16.791,17.906z"/>
-								<path fill="#010101" d="M53.012,9.451c-2.914,1.131-5.757,1.708-8.473,1.708c-4.542,0-7.891-1.575-10.061-3.089l-4.556,15.765
-									c3.059,1.967,6.356,2.966,9.815,2.966c2.821,0,5.744-0.678,8.692-2.016l-0.009-0.11l0.185-0.044L53.012,9.451z"/>
-							</g>
-							<g>
-								<path fill="#010101" d="M78.96,33.702v4.928c0,2.482-0.898,4.605-2.691,6.373c-1.794,1.768-3.953,2.65-6.479,2.65
-									c-2.524,0-4.678-0.889-6.458-2.67s-2.67-3.939-2.67-6.479c0-2.484,0.891-4.621,2.67-6.42c1.78-1.791,3.897-2.688,6.355-2.688h4.969
-									v-8.612h-4.969c-2.458,0-4.575-0.897-6.355-2.691c-1.78-1.794-2.67-3.947-2.67-6.458c0-2.511,0.891-4.657,2.67-6.438
-									c1.78-1.779,3.933-2.67,6.458-2.67c2.526,0,4.686,0.883,6.479,2.65c1.793,1.766,2.691,3.891,2.691,6.375v4.926h8.568v-4.926
-									c0-2.484,0.897-4.609,2.691-6.375c1.793-1.767,3.959-2.65,6.5-2.65c2.539,0,4.69,0.891,6.457,2.67
-									c1.767,1.781,2.65,3.927,2.65,6.438c0,2.511-0.884,4.663-2.65,6.458c-1.767,1.794-3.891,2.691-6.374,2.691h-4.969v8.612h4.969
-									c2.483,0,4.607,0.896,6.374,2.688c1.767,1.799,2.65,3.936,2.65,6.42c0,2.539-0.884,4.697-2.65,6.479s-3.918,2.67-6.457,2.67
-									c-2.541,0-4.707-0.883-6.5-2.65c-1.794-1.768-2.691-3.891-2.691-6.373v-4.928H78.96z M74.655,16.48v-4.843
-									c0-1.325-0.477-2.464-1.43-3.416c-0.952-0.952-2.105-1.428-3.456-1.428c-1.297,0-2.423,0.476-3.374,1.428
-									c-0.953,0.952-1.429,2.09-1.429,3.416c0,1.324,0.476,2.462,1.429,3.415c0.951,0.952,2.09,1.429,3.415,1.429H74.655L74.655,16.48z
-									 M74.655,33.702h-4.845c-1.324,0-2.463,0.477-3.415,1.43c-0.953,0.949-1.429,2.074-1.429,3.373c0,1.352,0.476,2.504,1.429,3.457
-									c0.952,0.951,2.09,1.428,3.415,1.428c1.326,0,2.463-0.477,3.415-1.428c0.953-0.953,1.43-2.094,1.43-3.416V33.702L74.655,33.702z
-									 M78.96,29.397h8.568v-8.612H78.96V29.397z M91.834,16.48h4.886c1.296,0,2.42-0.477,3.373-1.429s1.43-2.091,1.43-3.415
-									c0-1.326-0.472-2.464-1.408-3.416c-0.938-0.952-2.078-1.428-3.415-1.428c-1.339,0-2.485,0.476-3.438,1.428s-1.428,2.09-1.428,3.416
-									V16.48L91.834,16.48z M91.834,33.702v4.844c0,1.322,0.476,2.463,1.428,3.416c0.952,0.951,2.099,1.428,3.438,1.428
-									c1.338,0,2.477-0.477,3.415-1.428c0.937-0.953,1.408-2.105,1.408-3.457c0-1.299-0.477-2.424-1.43-3.373
-									c-0.953-0.953-2.077-1.43-3.373-1.43H91.834z"/>
-							</g>
-							</svg>								
-						</kbd> + <kbd>&darr;</kbd> but when two consecutive subtitles share a common timecode (the first subtitle's OUT 
-							point is the same next subtitles IN point) only the IN point is adjusted leaving the first subtitles OUT point in the original position.
+						<p>	Same behavior as <kbd> <svg width="27px" height="12.5px" viewBox="0 0 108.167 50"> <use xlink:href="#SYM_metaKey"/> </svg> </kbd> + <kbd>&darr;</kbd> 
+							but when two consecutive subtitles share a common timecode (the first subtitle's OUT point is the same next subtitles IN point) only the IN point
+							is adjusted leaving the first subtitles OUT point in the original position.
 						</p>
 					</td>
 				</tr>
@@ -684,79 +480,70 @@ not, see http://www.gnu.org/licenses/.
 						<kbd>ALT</kbd> + <kbd>&uarr;</kbd>
 					</td>
 					<td class="behaviorA">
-						<p>	Same behavior as 
-							<kbd>
-								<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-									 width="27px" height="12.5px" viewBox="0 0 108.167 50" enable-background="new 0 0 108.167 50" xml:space="preserve">
-								<g>
-									<path fill="#010101" d="M22.706,24.997c-2.363-1.215-4.661-1.832-6.831-1.832c-0.295,0-0.592,0.009-0.889,0.035
-										c-2.769,0.229-5.297,0.959-6.923,1.527c-0.431,0.159-0.874,0.326-1.329,0.512l-4.45,15.425c3.056-1.131,5.761-1.682,8.237-1.682
-										c4.005,0,6.912,1.496,9.313,3.037c1.138-3.859,3.866-13.182,4.681-15.969C23.923,25.691,23.322,25.331,22.706,24.997z"/>
-									<path fill="#010101" d="M28.458,28.918l-4.48,15.562c1.329,0.76,5.801,3.172,9.225,3.172c2.764,0,5.858-0.707,9.454-2.168
-										l4.278-14.961c-2.905,0.938-5.691,1.412-8.296,1.412C33.885,31.936,30.558,30.396,28.458,28.918z"/>
-									<path fill="#010101" d="M16.791,17.906c3.82,0.039,6.646,1.496,8.987,2.997l4.595-15.721c-0.968-0.555-3.508-1.937-5.343-2.408
-										c-1.208-0.282-2.478-0.427-3.825-0.427c-2.566,0.048-5.37,0.691-8.564,1.971L8.259,19.706c3.21-1.21,5.977-1.8,8.525-1.8
-										C16.786,17.906,16.791,17.906,16.791,17.906z"/>
-									<path fill="#010101" d="M53.012,9.451c-2.914,1.131-5.757,1.708-8.473,1.708c-4.542,0-7.891-1.575-10.061-3.089l-4.556,15.765
-										c3.059,1.967,6.356,2.966,9.815,2.966c2.821,0,5.744-0.678,8.692-2.016l-0.009-0.11l0.185-0.044L53.012,9.451z"/>
-								</g>
-								<g>
-									<path fill="#010101" d="M78.96,33.702v4.928c0,2.482-0.898,4.605-2.691,6.373c-1.794,1.768-3.953,2.65-6.479,2.65
-										c-2.524,0-4.678-0.889-6.458-2.67s-2.67-3.939-2.67-6.479c0-2.484,0.891-4.621,2.67-6.42c1.78-1.791,3.897-2.688,6.355-2.688h4.969
-										v-8.612h-4.969c-2.458,0-4.575-0.897-6.355-2.691c-1.78-1.794-2.67-3.947-2.67-6.458c0-2.511,0.891-4.657,2.67-6.438
-										c1.78-1.779,3.933-2.67,6.458-2.67c2.526,0,4.686,0.883,6.479,2.65c1.793,1.766,2.691,3.891,2.691,6.375v4.926h8.568v-4.926
-										c0-2.484,0.897-4.609,2.691-6.375c1.793-1.767,3.959-2.65,6.5-2.65c2.539,0,4.69,0.891,6.457,2.67
-										c1.767,1.781,2.65,3.927,2.65,6.438c0,2.511-0.884,4.663-2.65,6.458c-1.767,1.794-3.891,2.691-6.374,2.691h-4.969v8.612h4.969
-										c2.483,0,4.607,0.896,6.374,2.688c1.767,1.799,2.65,3.936,2.65,6.42c0,2.539-0.884,4.697-2.65,6.479s-3.918,2.67-6.457,2.67
-										c-2.541,0-4.707-0.883-6.5-2.65c-1.794-1.768-2.691-3.891-2.691-6.373v-4.928H78.96z M74.655,16.48v-4.843
-										c0-1.325-0.477-2.464-1.43-3.416c-0.952-0.952-2.105-1.428-3.456-1.428c-1.297,0-2.423,0.476-3.374,1.428
-										c-0.953,0.952-1.429,2.09-1.429,3.416c0,1.324,0.476,2.462,1.429,3.415c0.951,0.952,2.09,1.429,3.415,1.429H74.655L74.655,16.48z
-										 M74.655,33.702h-4.845c-1.324,0-2.463,0.477-3.415,1.43c-0.953,0.949-1.429,2.074-1.429,3.373c0,1.352,0.476,2.504,1.429,3.457
-										c0.952,0.951,2.09,1.428,3.415,1.428c1.326,0,2.463-0.477,3.415-1.428c0.953-0.953,1.43-2.094,1.43-3.416V33.702L74.655,33.702z
-										 M78.96,29.397h8.568v-8.612H78.96V29.397z M91.834,16.48h4.886c1.296,0,2.42-0.477,3.373-1.429s1.43-2.091,1.43-3.415
-										c0-1.326-0.472-2.464-1.408-3.416c-0.938-0.952-2.078-1.428-3.415-1.428c-1.339,0-2.485,0.476-3.438,1.428s-1.428,2.09-1.428,3.416
-										V16.48L91.834,16.48z M91.834,33.702v4.844c0,1.322,0.476,2.463,1.428,3.416c0.952,0.951,2.099,1.428,3.438,1.428
-										c1.338,0,2.477-0.477,3.415-1.428c0.937-0.953,1.408-2.105,1.408-3.457c0-1.299-0.477-2.424-1.43-3.373
-										c-0.953-0.953-2.077-1.43-3.373-1.43H91.834z"/>
-								</g>
-								</svg>								
-						</kbd> + <kbd>&uarr;</kbd> but when two consecutive subtitles share a common timecode (the first subtitle's OUT 
-							point is the same next subtitles IN point) only the OUT point is adjusted leaving the second subtitles IN point in the original position.
+						<p>	Same behavior as <kbd> <svg width="27px" height="12.5px" viewBox="0 0 108.167 50"> <use xlink:href="#SYM_metaKey"/> </svg> </kbd> + <kbd>&uarr;</kbd>
+							but when two consecutive subtitles share a common timecode (the first subtitle's OUT point is the same next subtitles IN point) only the OUT point
+							is adjusted leaving the second subtitles IN point in the original position.
 						</p>
 					</td>
-				</tr>										
+				</tr>
 				<tr>
 					<td class="keyboardInputB">
-						<input type="checkbox" checked="checked"/>
+						<kbd>CTRL</kbd> + <kbd>-</kbd>
 					</td>
 					<td class="behaviorB">
-						<p>	You can manipulate multiple subtitles at once by using the checkboxes next to them. If you click any checkbox and then 
-						hold down the<kbd>Shift</kbd> key and click another checkbox it will selet or deselect that range of checkboxes. You can also toggle selecting all the boxes
-						by clicking the top most box in the header.
-						</p>
+						<p>Slow down video play rate by 10%.<br/>Alt keyboard shortcut is just <kbd>-</kbd> on the numeric keypad</p>
 					</td>
 				</tr>	
 				<tr>
 					<td class="keyboardInputA">
-						<input type="range" min="-1.5" max="1.5" step="0.025" value="0"/>
+						<kbd>CTRL</kbd> + <kbd>+</kbd>
 					</td>
 					<td class="behaviorA">
+						<p>Speed up video play rate by 10%.<br/>Alt keyboard shortcut is just <kbd>+</kbd> on the numeric keypad</p>
+					</td>
+				</tr>	
+				<tr>
+					<td class="keyboardInputB">
+						<kbd>TAB</kbd>
+					</td>
+					<td class="behaviorB">
+						<p>"Rewind" to nearest IN POINT. If you tap it in rapid succession you can jump backwards more than one IN POINT.
+							This feature is useful when entering subtitles while the video plays and you need to repeat the dialog.
+						</p>
+					</td>
+				</tr>																							
+				<tr>
+					<td class="keyboardInputA" style="padding-left: 85px;">
+						<input type="checkbox" checked="checked"/>
+					</td>
+					<td class="behaviorA">
+						<p>	You can manipulate multiple subtitles at once by using the checkboxes next to them. If you click any checkbox and then 
+						hold down the<kbd>Shift</kbd> key and click another checkbox it will selet or deselect that range of checkboxes. You can also toggle selecting
+						all the boxes by clicking the top most box in the header.
+						</p>
+					</td>
+				</tr>	
+				<tr>
+					<td class="keyboardInputB" style="padding-left: 30px;">
+						<input type="range" min="-1.5" max="1.5" step="0.025" value="0"/>
+					</td>
+					<td class="behaviorB">
 						<p>	Adjust the IN and OUT points of a subtitle in 0.025 second increments up to 1.5 seconds in either direction.<br/>
 							Hold down <kbd>SHIFT</kbd> to adjust only the IN point and <kbd>ALT</kbd> to adjust only the OUT point.
 						</p>
 					</td>
 				</tr>
 				<tr>
-					<td class="keyboardInputB">
+					<td class="keyboardInputA" style="padding-left: 70px;">
 						<button>Split Sub</button>
 					</td>
-					<td class="behaviorB">
+					<td class="behaviorA">
 						<p>	Splits the subtitle into two subtitles each half the length of the original
 						</p>
 					</td>
 				</tr>
 				<tr>
-					<td class="keyboardInputA">
+					<td class="keyboardInputB" style="padding-left: 55px;">
 						<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 							 width="60px" height="25px" viewBox="0 0 119.167 50" enable-background="new 0 0 119.167 50" xml:space="preserve">
 						<g>
@@ -786,7 +573,7 @@ not, see http://www.gnu.org/licenses/.
 						</svg>
 				
 					</td>
-					<td class="behaviorA">
+					<td class="behaviorB">
 						Move the move cursor over the waveform and you can drag to scrub through your video.<br/>
 						Holding down <kbd>SHIFT</kbd> while dragging allows you to scrub faster.
 					</td>
@@ -875,20 +662,20 @@ not, see http://www.gnu.org/licenses/.
 								</tr>
 								<tr id="ROW0">
 									<td class="checkbox"> </td>
-									<td class="timecode"> <input type="text" class="timecodeInput" id="IN0"/> </td>
-									<td class="timecode"> <input type="text" class="timecodeInput" id="OUT0"/></td>
+									<td class="timecode"> <input type="text" class="timecodeInput" id="IN0" style="margin-bottom: 20px;"/> </td>
+									<td class="timecode"> <input type="text" class="timecodeInput" id="OUT0" style="margin-bottom: 20px;"/></td>
 									<td class="subtitle"> <textarea class="subtitleInput" id="SUB0"></textarea> </td>
 								</tr>
 							</tbody>
 						</table>
-						<input id="SHIFT0" type="range" min="-1.5" max="1.5" step="0.025" value="0"/>
+						<input id="SHIFT0" type="range" min="-3.0" max="3.0" step="0.025" value="0"/>
 					</fieldset>
 				</div>						
 			</div>
 				
 			<div class="bottomColumn">
 				<fieldset class="controlWrapper" style="width:97%; padding-bottom: 10px; padding:0px; padding-top:3px;">
-					<legend>It is strongly recommend you not use this top row buttons and instead learn the hotkeys!!!!</legend>
+					<legend>It is strongly recommend you not use this top row of buttons and instead learn the hotkeys!!!!</legend>
 					<div style="background-color:red;height: 25px;">	
 							<button id="BTNsetInPoint">Set In Point</button>
 							<button id="BTNsetOutPoint">Set Out Point</button>
@@ -899,45 +686,46 @@ not, see http://www.gnu.org/licenses/.
 							<button id="BTNredo">Redo</button>							
 					</div>
 				</fieldset>
-				<fieldset class="controlGroup">
-					Font Color:
+				<fieldset class="controlWrapper" style="min-height: 32px;margin-top: 5px;">
+					Font:
 					<input type="color" id="fontColor">
-					Background Color: 
+					Background: 
 					<input type="color" id="bgColor">
 					Font Size:
 					<input type="text" id="fontSize" class="timecodeInput">
-					Opacity:
+					Background Opacity:
 					<input type="text" id="bgOpacity" class="timecodeInput">
 				</fieldset>	
 							
-				<fieldset class="controlWrapper" style="min-width: 300px;">
+				<fieldset class="controlWrapper" style="min-width: 300px; float: right;">
 					<legend>Playback Speed</legend>
 					<input type="range" id="playRate" min="-5" max="5" value="0" step="1"/>
 					<span id="currentSpeed" style="margin-right:10px; margin-left: 15px">Current Speed: 100%</span>
 				</fieldset>	
 									
-				<fieldset class="controlWrapper">
+				<fieldset class="controlWrapper" style="min-width: 290px;">
 					<legend>Save Project</legend>
 					<button id="saveSubtitles">Save Subtitles</button>
-					<button id="exportSubtitles">Export STL File</button>
+					<button id="exportSubtitles" style="margin-left: 20px;">Export STL File</button>
 					<select id="STLMode">
 						<option>NTSC</option>
 						<option>PAL</option>
 					</select>
 				</fieldset>
 							
-				<fieldset class="controlWrapper">
+				<fieldset class="controlWrapper" style="min-width: 415px;">
 					<legend>Time Adjustments To Selected Subtitles</legend>
-					<button id="BTNappyOffet">Apply Offset To:</button>
+					<button id="BTNappyOffet" style="margin-right: 25px;">Apply Offset</button>
+					To:
 					<select id="offsetType">
-						<option value="BOTH">Both In and Out</option>					
+						<option value="BOTH">In and Out Points</option>					
 						<option value="IN">In Points Only</option>
 						<option value="OUT">Out Points Only</option>
 					</select>
 					<input type="text" style="width: 4em;" id="offsetAmount" value="0.0"/>
 					Seconds
 				</fieldset>	
-				<fieldset class="controlWrapper">
+				<fieldset class="controlWrapper" style="min-width: 175px; float: right;">
 					<legend>Delete Selected Subtitles</legend>
 					<button id="deleteSubs">Delete</button>
 				</fieldset>		
