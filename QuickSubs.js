@@ -58,7 +58,14 @@ var undoPosition=0;
 
 function init() {
 	setupUndoBuffer();
-	
+
+	// Set all modifier keys to "UP" status by default
+	var videoTag=document.getElementById("video");
+	videoTag.setAttribute("shiftKey", "false");
+	videoTag.setAttribute("ctrlKey", "false");			
+	videoTag.setAttribute("altKey", "false");
+	videoTag.setAttribute("metaKey", "false");		
+				
 	// Setup all the event listeners
 	document.getElementById("showInstructions").addEventListener("click", showInstructions);
 	document.getElementById("hideInstructions").addEventListener("click", hideInstructions);		
@@ -1736,7 +1743,6 @@ function getClosestPointFromTime(point, nativeTC, forward, margin) {
 	// TODO: Explain the margin
 	if(typeof(margin)==='undefined')  {
 		margin=0.0;
-		console.log("called");
 	}	
 	var P;
 	var currentBest=Number.POSITIVE_INFINITY;
@@ -1800,36 +1806,22 @@ function processKeyboardInput(event) {
 
 	switch(event.keyCode) {
 		// Set IN/OUT Point
-		case 73: // I
-		case 219: // [
-			if (videoTag.getAttribute("ctrlKey") == "true")
+		case 17: // Control Key
+			if (videoTag.getAttribute("shiftKey") == "false")
 				BTNsetInPoint(event);
-			break;
-		case 79: // O
-		case 221: // ]
-			if (videoTag.getAttribute("ctrlKey") == "true")
-				BTNsetOutPoint(event);
-			break;
-		
-		// Clear IN/OUT Point	
-		case 188: // , and < key	
-			if (videoTag.getAttribute("ctrlKey") == "true")
+			else
 				BTNclearInPoint(event); 
 		break;
-		case 190: // . and > key
-			if (videoTag.getAttribute("ctrlKey") == "true")
+		case 18: // Alt Key
+			if (videoTag.getAttribute("shiftKey") == "false")
+				BTNsetOutPoint(event);
+			else
 				BTNclearOutPoint(event); 
 		break;
 		
-		case 189: // - key
-			if (videoTag.getAttribute("ctrlKey") != "true")
-				break;
 		case 109: // - key on numeric keypad		
 				slowDownVideo();
 		break;	
-		case 187: // + key
-			if (videoTag.getAttribute("ctrlKey") != "true")
-				break;
 		case 107: // + key on numeric keypad					
 				speedUpVideo()		
 		break;
@@ -1948,7 +1940,7 @@ function processEnter(event) {
 function processUpArrow(event) {
 	var videoTag=document.getElementById("video");
 	// If the user isn't holding down META or ALT when hitting an arrow then we are ignoring the input
-	if (videoTag.getAttribute("altKey") != "true" && videoTag.getAttribute("metaKey") != "true")
+	if (videoTag.getAttribute("shiftKey") != "true" && videoTag.getAttribute("metaKey") != "true")
 		return
 					
 	event.preventDefault();
@@ -1975,7 +1967,7 @@ function processUpArrow(event) {
 		createUndoState("CR", index, true);
 				
 		// If the previous IN point time was the same as the OUT point we just moved let's also adjust it
-		if (videoTag.getAttribute("metaKey") == "true") {
+		if (videoTag.getAttribute("shiftKey") != "true") {
 			var oIndex=getIndexFromTimecode("IN", oldTime);
 			if (oIndex != -1 ) {
 				createUndoState("CU", oIndex, true);			
@@ -1998,7 +1990,7 @@ function processUpArrow(event) {
 function processDownArrow(event) {
 	var videoTag=document.getElementById("video");
 	// If the user isn't holding down META or ALT when hitting an arrow then we are ignoring the input
-	if (videoTag.getAttribute("altKey") != "true" && videoTag.getAttribute("metaKey") != "true")
+	if (videoTag.getAttribute("shiftKey") != "true" && videoTag.getAttribute("metaKey") != "true")
 		return
 					
 	event.preventDefault();
@@ -2025,7 +2017,7 @@ function processDownArrow(event) {
 		createUndoState("CR", index, true);	
 		
 		// If the previous OUT point time was the same as the IN point we just moved let's also adjust it
-		if (videoTag.getAttribute("metaKey") == "true") {
+		if (videoTag.getAttribute("shiftKey") != "true") {
 			var oIndex=getIndexFromTimecode("OUT", oldTime);
 			if (oIndex != -1 ) {
 				createUndoState("CU", oIndex, true);		

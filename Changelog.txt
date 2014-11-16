@@ -1,3 +1,9 @@
+2014/11/15 Version 1.01 Released
+			Switched hotkeys again... I think this finally should work effectively cross platform/browser
+				CTRL/ALT and SHIFT+CTRL/ALT set/clear IN/OUT points
+				SHIFT + WINDOWS/COMMAND + UP/DOWN instead of ALT + WINDOWS/COMMAND + UP/DOWN
+				Removed CTRL + +/- shortcut to adjust speed. Now only +/- on numeric keypad
+
 2014/11/01 Version 1.0 Released
 			Ensured list of subtitles stay in chronological as before new subtitles were just inserted at the end
 			Added undo/redo functionality 
