@@ -51,6 +51,7 @@ var SECONDS_TO_PREVIEW = 7;
 var LINES_PER_SECOND;	
 var VIDEO_SAMPLE_RATE;
 var PAST_WAVEFORM_AMOUNT=1.5; // Show past 1.5 seconds of waveform
+var WAVEFORM_FRAMERATE=1000/20; // Update Waveform preview at 20 FPS
 
 var undoBuffer;
 var undoBufferSize=100;
@@ -76,10 +77,18 @@ function init() {
 	// These two are used to hide the default button for <input type="file"...> 
 	//	When they are clicked we just push a click event to the hidden elements
 	document.getElementById("BTNvideoLoad").addEventListener("click", 
-		function() { var event = new Event("click"); document.getElementById('loadVideo').dispatchEvent(event); }
+		function() { 
+			var event = document.createEvent("MouseEvents");
+			event.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0,false, false, false, false, 0, null);
+			document.getElementById('loadVideo').dispatchEvent(event);
+		}
 	);
 	document.getElementById("BTNsubtitleLoad").addEventListener("click", 
-		function() { var event = new Event("click"); document.getElementById('loadSubtitles').dispatchEvent(event); }
+		function() { 
+			var event = document.createEvent("MouseEvents");
+			event.initMouseEvent("click", true, true, window, 1, 0, 0, 0, 0,false, false, false, false, 0, null);		
+			document.getElementById('loadSubtitles').dispatchEvent(event); 
+		}
 	);	
 			
 	document.getElementById("BTNappyOffet").addEventListener("click", offsetSubs);	
@@ -665,7 +674,7 @@ function checkReady() {
 	if (videoTag.readyState === 4)
 		generateWaveformPreview();
 	else		
-		setTimeout(checkReady, 100);
+		setTimeout(checkReady, 250);
 }
 function generateWaveformPreview() {
 	var waveformPreview=document.getElementById("waveformPreview");
@@ -743,7 +752,7 @@ function compressSamples(buffer) {
 		if (data[i] > max)
 			max = data[i];
 	}
-	setInterval(drawWaveform, 1000/20);
+	setInterval(drawWaveform, WAVEFORM_FRAMERATE);
 	forceDraw();
 //	console.log(PREVIEW_SAMPLES);
 	console.log("done: currentSample:" + currentSample + " CompressedSampleBuffer:" + PREVIEW_SAMPLES.length + " FullSamples:" + data.length);
@@ -1158,11 +1167,11 @@ function validTimecode(TC) {
 
 function resetStatus() {
 	var node=	document.getElementById("statusMessage");
-	node.innerText="";
+	node.innerHTML="";
 }
 function updateStatusMessage(message) {
 	var node=	document.getElementById("statusMessage");
-	node.innerText=message;
+	node.innerHTML=message;
 }
 
 function detectTimecodeOverlap(row, curIn, curOut) {
@@ -1299,7 +1308,7 @@ function addSub(insertAt, createUndo, appendUndoState) {
 	input=document.createElement("br");
 	td.appendChild(input);
 	input=document.createElement("button"); input.className="splitSubtitle";
-	input.innerText="Split Sub"; input.id="SPLIT" + CURRENT_ROW;
+	input.innerHTML="Split Sub"; input.id="SPLIT" + CURRENT_ROW;
 	input.addEventListener('click', splitSub);
 	td.appendChild(input);
 	
@@ -1652,7 +1661,7 @@ function changePlayRate() {
 	
 	var asPercentage=Math.round(newRate*100);
 	
-	document.getElementById("currentSpeed").innerText="Current Speed:" + asPercentage + "%";
+	document.getElementById("currentSpeed").innerHTML="Current Speed:" + asPercentage + "%";
 }
 function slowDownVideo() {
 	var node=document.getElementById("playRate");
@@ -1771,18 +1780,41 @@ function getClosestPointFromTime(point, nativeTC, forward, margin) {
 }
 
 function dragWaveform(event) {
+	// Make sure a video is loaded otherwise do nothing
+	var videoTag=document.getElementById("video");
+	if ( videoTag.readyState !== 4 ) 
+		return;
+
 	var canvas=document.getElementById("waveformPreview");
-	if (event.button == 1 || event.which == 1) {
+
+	var clicked=false;
+
+
+	// Mozilla handles clicks and positions on canvases differently......
+	var currentX=0;
+	if (typeof event.buttons !== 'undefined') { // Check for Mozilla
+		if (event.buttons == 1) 
+			clicked=true;
+		currentX=event.layerX;
+	}
+	else { // Everything else
+		if (event.button == 1 || event.which == 1) 
+			clicked=true;
+		currentX=event.x
+	}
+
+	if (clicked) {
 		var lastValue=canvas.getAttribute("data-lastPosition");
 		if (isNaN(lastValue)) {
-			canvas.setAttribute("data-lastPosition", event.x);
+			canvas.setAttribute("data-lastPosition", currentX);
 		} else {
-			var adjust = (lastValue - event.x) / LINES_PER_SECOND;
+			var adjust = (lastValue - currentX) / LINES_PER_SECOND;
+			
 			if (event.shiftKey == true)
 				adjust=adjust*10;
-			var videoTag=document.getElementById("video");
+
 			videoTag.currentTime = videoTag.currentTime + adjust;
-			canvas.setAttribute("data-lastPosition", event.x);
+			canvas.setAttribute("data-lastPosition", currentX);
 			forceDraw();
 		}
 	} else {

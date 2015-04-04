@@ -1,3 +1,16 @@
+2015/04/03 Version 1.02 Released
+			Fixed compatibility issues with Firefox/Mozilla
+				Mozilla handles events for mouse slightly different than other browsers so had to tweak function dragWaveform(event)
+					Also updated init() to correct dispatch mouse clicks when loading videos and loading subtitles
+				Changed instances of innerText to innerHTML
+				Added <meta> tag in <header> to identify the proper character set used.
+				TODO: Some of the hotkeys don't work in Firefox/Mozilla as they have other default functionality.
+					Since nobody has reported an issue to me I'm going to be lazy and not fix them now...
+					
+			Created global WAVEFORM_FRAMERATE which is the number of MS to wait before drawing a new waveform preview
+					1000/20 = 50ms or 20 frames per second.
+					
+
 2014/11/15 Version 1.01 Released
 			Switched hotkeys again... I think this finally should work effectively cross platform/browser
 				CTRL/ALT and SHIFT+CTRL/ALT set/clear IN/OUT points
