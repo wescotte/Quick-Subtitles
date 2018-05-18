@@ -4,15 +4,15 @@ Copyright 2014 Eric Wescott - wescotte@gmail.com
 
 This file is part of Quick Subtitles.
 
-Foobar is free software: you can redistribute it and/or modify it under the terms of the
+Quick Subtitles is free software: you can redistribute it and/or modify it under the terms of the
 GNU General Public License as published by the Free Software Foundation, either version 3
 of the License, or (at your option) any later version.
 
-Foobar is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+Quick Subtitles is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with Foobar. If
+You should have received a copy of the GNU General Public License along with Quick Subtitles. If
 not, see http://www.gnu.org/licenses/.
 -->
 
@@ -649,7 +649,7 @@ not, see http://www.gnu.org/licenses/.
 				<div id="currentInput">
 			 		<fieldset class="controlGroup">
 					<legend>Enter Subtitles Here</legend>			
-						<table>
+						<table style="font-size: 1em;">
 							<tbody> 
 								<tr>
 									<th class="checkbox"> &nbsp; </th>
@@ -671,46 +671,50 @@ not, see http://www.gnu.org/licenses/.
 			</div>
 				
 			<div class="bottomColumn">
-				<fieldset class="controlWrapper" style="width:97%; padding-bottom: 10px; padding:0px; padding-top:3px;">
+				<fieldset class="controlWrapper" style="width:95%; padding-bottom: 10px; padding:0px; padding-top:3px; max-height:24px;">
 					<legend>It is strongly recommend you not use this top row of buttons and instead learn the hotkeys!!!!</legend>
-					<div style="background-color:red;height: 25px;">	
-							<button id="BTNsetInPoint">Set In Point</button>
-							<button id="BTNsetOutPoint">Set Out Point</button>
-							<button id="BTNaddSubtitle">Add Subtitle</button>						
-							<button id="BTNclearInPoint">Clear In Point</button>						
-							<button id="BTNclearOutPoint">Clear Out Point</button>
-							<button id="BTNundo">Undo</button>
-							<button id="BTNredo">Redo</button>							
+					<div style="background-color:red;height: 25px; display: flex;">	
+							<button style="font-size: .75em;" id="BTNsetInPoint">Set In Point</button>
+							<button style="font-size: .75em;" id="BTNsetOutPoint">Set Out Point</button>
+							<button style="font-size: .75em;" id="BTNaddSubtitle">Add Subtitle</button>						
+							<button style="font-size: .75em;" id="BTNclearInPoint">Clear In Point</button>						
+							<button style="font-size: .75em;" id="BTNclearOutPoint">Clear Out Point</button>
+							<button style="font-size: .75em;" id="BTNundo">Undo</button>
+							<button style="font-size: .75em;" id="BTNredo">Redo</button>							
 					</div>
 				</fieldset>
-				<fieldset class="controlWrapper" style="min-height: 32px;margin-top: 5px;">
-					Font:
-					<input type="color" id="fontColor">
-					Background: 
-					<input type="color" id="bgColor">
-					Font Size:
-					<input type="text" id="fontSize" class="timecodeInput">
-					Background Opacity:
-					<input type="text" id="bgOpacity" class="timecodeInput">
+				<fieldset class="controlWrapper" style="width: 95%; min-height: 32px;margin-top: 5px; font-size: .75em;  max-height:24px;">
+					<div style="display: flex;">
+						Font:
+						<input type="color" id="fontColor">
+						Background: 
+						<input type="color" id="bgColor">
+						Font Size:
+						<input type="text" id="fontSize" class="timecodeInput">
+						Background Opacity:
+						<input type="text" id="bgOpacity" class="timecodeInput">
+					</div>
 				</fieldset>	
 							
-				<fieldset class="controlWrapper" style="min-width: 300px; float: right;">
+				<fieldset class="controlWrapper" style="min-width: 300px; float: right;  max-height:24px;">
 					<legend>Playback Speed</legend>
 					<input type="range" id="playRate" min="-5" max="5" value="0" step="1"/>
 					<span id="currentSpeed" style="margin-right:10px; margin-left: 15px">Current Speed: 100%</span>
 				</fieldset>	
 									
-				<fieldset class="controlWrapper" style="min-width: 290px;">
+				<fieldset class="controlWrapper" style="min-width: 290px; max-width: 290px; max-height:25px;  max-height:24px;">
 					<legend>Save Project</legend>
-					<button id="saveSubtitles">Save Subtitles</button>
-					<button id="exportSubtitles" style="margin-left: 20px;">Export STL File</button>
-					<select id="STLMode">
+					<div style="display: flex;">
+					<button style="font-size: .75em;" id="saveSubtitles">Save Subtitles</button>
+					<button style="font-size: .75em;" id="exportSubtitles" style="margin-left: 20px;">Export STL File</button>
+					<select style="font-size: .75em;" id="STLMode">
 						<option>NTSC</option>
 						<option>PAL</option>
 					</select>
+					</div>
 				</fieldset>
 							
-				<fieldset class="controlWrapper" style="min-width: 415px;">
+				<fieldset class="controlWrapper" style="min-width: 415px; max-height: 24px">
 					<legend>Time Adjustments To Selected Subtitles</legend>
 					<button id="BTNappyOffet" style="margin-right: 25px;">Apply Offset</button>
 					To:
@@ -722,7 +726,7 @@ not, see http://www.gnu.org/licenses/.
 					<input type="text" style="width: 4em;" id="offsetAmount" value="0.0"/>
 					Seconds
 				</fieldset>	
-				<fieldset class="controlWrapper" style="min-width: 175px; float: right;">
+				<fieldset class="controlWrapper" style="min-width: 175px; float: right; max-height:24px;">
 					<legend>Delete Selected Subtitles</legend>
 					<button id="deleteSubs">Delete</button>
 				</fieldset>		

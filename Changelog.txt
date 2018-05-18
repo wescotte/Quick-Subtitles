@@ -1,3 +1,6 @@
+2018/05/18 Version 1.03 Released
+            Fixed some CSS/formatting issues
+
 2015/04/03 Version 1.02 Released
 			Fixed compatibility issues with Firefox/Mozilla
 				Mozilla handles events for mouse slightly different than other browsers so had to tweak function dragWaveform(event)
