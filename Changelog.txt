@@ -1,3 +1,8 @@
+2022/03/01 Version 1.04 Released
+			Fixed some CSS/formatting issues
+			Added a "Generate Waveforms" checkbox
+				Noticed that some larger/longer video files will bring up the "page not responding" dialog and this lets you avoid that situation.
+
 2018/05/18 Version 1.03 Released
             Fixed some CSS/formatting issues
 
