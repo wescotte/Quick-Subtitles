@@ -676,7 +676,7 @@ function checkReady() {
 	else		
 		setTimeout(checkReady, 250);
 }
-function generateWaveformPreview() {
+function generateWaveformPreview() {;
 	var waveformPreview=document.getElementById("waveformPreview");
 	var style=window.getComputedStyle(waveformPreview);
 	CANVAS_WIDTH=parseInt(style.getPropertyValue('width'));
@@ -691,10 +691,14 @@ function generateWaveformPreview() {
 	var file = document.getElementById('loadVideo').files[0];
 	
 	// Display Loading Text	
+	
 	var ctx=waveformPreview.getContext("2d");
-	ctx.font="60px san-serif";
-	ctx.fillText("Generating Waveform...",50,80);
-		
+	var checkBox = document.getElementById("generateWaveformsCheckBox");	
+	if (checkBox.checked) {
+		ctx.font="60px san-serif";
+		ctx.fillText("Generating Waveform...",50,80);
+	}
+	
 	var fileReader = new FileReader();
 	fileReader.onload = function(e) {
 	  	var arrayBuffer = e.target.result;
@@ -723,7 +727,7 @@ function generateWaveformPreview() {
 	fileReader.readAsArrayBuffer(file);	
 }
 function compressSamples(buffer) {
-	console.log(buffer);
+	// console.log(buffer);
 	
 	VIDEO_SAMPLE_RATE=buffer.sampleRate;
 	var totalSamples=Math.ceil(buffer.duration * VIDEO_SAMPLE_RATE / LINES_PER_SECOND);	
@@ -736,25 +740,31 @@ function compressSamples(buffer) {
 	var step=0;
 	var currentSample=0;       	
 	
-	for (i=0; i < data.length; i++) {
-		step++;
-	
-		if (step >= (VIDEO_SAMPLE_RATE / LINES_PER_SECOND) ) {
-//		if (step == LINES_PER_SECOND)  {		
-			PREVIEW_SAMPLES[currentSample]=Math.abs(min-max) * CANVAS_HEIGHT;
-			currentSample++;
-			step=0;
-			min=1.0;
-			max=-1.0;            			
+	// If the user specified not to generate waveforms then we just skip this loop
+	var checkBox = document.getElementById("generateWaveformsCheckBox");	
+	if (checkBox.checked) {
+		for (i=0; i < data.length; i++) {
+			step++;
+		
+		
+			if (step >= (VIDEO_SAMPLE_RATE / LINES_PER_SECOND) ) {
+	//		if (step == LINES_PER_SECOND)  {		
+				PREVIEW_SAMPLES[currentSample]=Math.abs(min-max) * CANVAS_HEIGHT;
+				currentSample++;
+				step=0;
+				min=1.0;
+				max=-1.0;            			
+			}
+			if (data[i] < min)
+				min = data[i]
+			if (data[i] > max)
+				max = data[i];
 		}
-		if (data[i] < min)
-			min = data[i]
-		if (data[i] > max)
-			max = data[i];
 	}
+	
 	setInterval(drawWaveform, WAVEFORM_FRAMERATE);
 	forceDraw();
-//	console.log(PREVIEW_SAMPLES);
+
 	console.log("done: currentSample:" + currentSample + " CompressedSampleBuffer:" + PREVIEW_SAMPLES.length + " FullSamples:" + data.length);
 }
 function drawWaveform() {
